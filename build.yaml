@@ -1,0 +1,10 @@
+targets:
+  $default:
+    builders:
+      # 서버 키가 snake_case 라면 여기서 한 번에 정한다.
+      # 클래스마다 @JsonKey(name: ...) 를 붙이지 않는다.
+      json_serializable:
+        options:
+          field_rename: snake
+          create_to_json: true
+          explicit_to_json: true
