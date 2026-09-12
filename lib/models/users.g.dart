@@ -28,9 +28,13 @@ const _$SocialProviderEnumMap = {
 };
 
 _ProfileUpdateReq _$ProfileUpdateReqFromJson(Map<String, dynamic> json) =>
-    _ProfileUpdateReq(nickname: json['nickname'] as String, profileImageUrl: json['profile_image_url'] as String?);
+    _ProfileUpdateReq(
+      nickname: json['nickname'] as String,
+      profileImageUrl: json['profile_image_url'] as String?,
+    );
 
-Map<String, dynamic> _$ProfileUpdateReqToJson(_ProfileUpdateReq instance) => <String, dynamic>{
-  'nickname': instance.nickname,
-  'profile_image_url': instance.profileImageUrl,
-};
+Map<String, dynamic> _$ProfileUpdateReqToJson(_ProfileUpdateReq instance) =>
+    <String, dynamic>{
+      'nickname': instance.nickname,
+      'profile_image_url': instance.profileImageUrl,
+    };

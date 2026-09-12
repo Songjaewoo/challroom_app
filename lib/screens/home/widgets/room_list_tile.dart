@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/enums.dart';
 import '../../../models/rooms.dart';
 import '../../../shared/avatar_color.dart';
-import '../../../shared/coming_soon.dart';
 import '../../../shared/widgets/participant_avatar_stack.dart';
 
 /// 방 목록 카드 한 줄. 모집 중([RoomStatus.open])이면 오른쪽에 "신청" 배지를 붙인다.
+/// 이미 속한 방 목록("내 방")에서는 신청할 필요가 없으니 [showApplyBadge] 로 끈다.
 class RoomListTile extends StatelessWidget {
-  const RoomListTile({required this.room, required this.colorIndex, super.key});
+  const RoomListTile({required this.room, required this.colorIndex, this.showApplyBadge = true, super.key});
 
   final Room room;
   final int colorIndex;
+  final bool showApplyBadge;
 
   @override
   Widget build(BuildContext context) {
     final style = thumbnailStyleFor(colorIndex);
 
     return InkWell(
-      onTap: () => showComingSoon(context, '"${room.title}" 방 상세'),
+      onTap: () => context.push(RoutePath.roomDetailOf(room.id)),
       borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -71,7 +74,7 @@ class RoomListTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (room.status == RoomStatus.open) ...[const SizedBox(width: 8), const _ApplyBadge()],
+            if (showApplyBadge && room.status == RoomStatus.open) ...[const SizedBox(width: 8), const _ApplyBadge()],
           ],
         ),
       ),

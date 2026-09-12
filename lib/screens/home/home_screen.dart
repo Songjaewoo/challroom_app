@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../room/my_rooms_screen.dart';
+import '../settings/settings_screen.dart';
 import 'widgets/home_feed_view.dart';
 
-/// 바텀 네비게이션 4탭의 셸. "홈" 탭만 실제 콘텐츠가 있고 나머지는 준비 중이다.
+/// 바텀 네비게이션 4탭의 셸. "만들기"는 탭이 아니라 액션이다 — 눌러도 탭이 안 바뀌고
+/// 방 만들기 화면을 모달로 띄운다.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -16,16 +21,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const _tabs = [
     HomeFeedView(),
-    _ComingSoonTab(label: '내 방'),
-    _ComingSoonTab(label: '방 만들기'),
-    _ComingSoonTab(label: '프로필'),
+    MyRoomsScreen(),
+    SizedBox.shrink(), // "만들기" 는 액션이라 이 자리로 탭이 넘어올 일이 없다.
+    SettingsScreen(),
   ];
 
   static const _items = [
     BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: '홈'),
     BottomNavigationBarItem(icon: Icon(Icons.meeting_room_outlined), label: '내 방'),
     BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: '만들기'),
-    BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: '프로필'),
+    BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: '설정'),
   ];
 
   @override
@@ -43,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
           top: false,
           child: BottomNavigationBar(
             currentIndex: _tabIndex,
-            onTap: (index) => setState(() => _tabIndex = index),
+            onTap: _onTabTap,
             type: BottomNavigationBarType.fixed,
             backgroundColor: AppColors.surface,
             elevation: 0,
@@ -57,17 +62,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
 
-class _ComingSoonTab extends StatelessWidget {
-  const _ComingSoonTab({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('$label 화면은 곧 열려요', style: const TextStyle(fontSize: 13, color: AppColors.inkMuted)),
-    );
+  void _onTabTap(int index) {
+    // "만들기" 는 탭 콘텐츠가 없는 액션이다 — 현재 탭은 그대로 두고 화면만 띄운다.
+    if (index == 2) {
+      context.push(RoutePath.createRoom);
+      return;
+    }
+    setState(() => _tabIndex = index);
   }
 }

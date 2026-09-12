@@ -277,19 +277,27 @@ final class UserRepositoryProvider
 
 String _$userRepositoryHash() => r'f7d660a4d25f178dd38528f0290f6c5dcece501f';
 
+/// 로컬 모드에서는 방 만들기로 생긴 방을 기억해야 해서 `keepAlive` 다 — 화면을 옮겨 다녀도
+/// [LocalRoomRepository] 인스턴스가(그리고 그 안의 상태가) 계속 살아있어야 한다.
+
 @ProviderFor(roomRepository)
 final roomRepositoryProvider = RoomRepositoryProvider._();
+
+/// 로컬 모드에서는 방 만들기로 생긴 방을 기억해야 해서 `keepAlive` 다 — 화면을 옮겨 다녀도
+/// [LocalRoomRepository] 인스턴스가(그리고 그 안의 상태가) 계속 살아있어야 한다.
 
 final class RoomRepositoryProvider
     extends $FunctionalProvider<RoomRepository, RoomRepository, RoomRepository>
     with $Provider<RoomRepository> {
+  /// 로컬 모드에서는 방 만들기로 생긴 방을 기억해야 해서 `keepAlive` 다 — 화면을 옮겨 다녀도
+  /// [LocalRoomRepository] 인스턴스가(그리고 그 안의 상태가) 계속 살아있어야 한다.
   RoomRepositoryProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'roomRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -316,4 +324,143 @@ final class RoomRepositoryProvider
   }
 }
 
-String _$roomRepositoryHash() => r'92061f0198719ac4d26de4a3204837259302a811';
+String _$roomRepositoryHash() => r'75a894f59f325e60dfc10ba6a04a930a5b272a76';
+
+/// 방 목록과 마찬가지로 작성한 댓글이 화면을 옮겨도 남아있어야 해서 `keepAlive` 다.
+
+@ProviderFor(commentRepository)
+final commentRepositoryProvider = CommentRepositoryProvider._();
+
+/// 방 목록과 마찬가지로 작성한 댓글이 화면을 옮겨도 남아있어야 해서 `keepAlive` 다.
+
+final class CommentRepositoryProvider
+    extends
+        $FunctionalProvider<
+          CommentRepository,
+          CommentRepository,
+          CommentRepository
+        >
+    with $Provider<CommentRepository> {
+  /// 방 목록과 마찬가지로 작성한 댓글이 화면을 옮겨도 남아있어야 해서 `keepAlive` 다.
+  CommentRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'commentRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$commentRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<CommentRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  CommentRepository create(Ref ref) {
+    return commentRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CommentRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CommentRepository>(value),
+    );
+  }
+}
+
+String _$commentRepositoryHash() => r'b0a94d5059942afaea5fc73861beaa547a2c6e62';
+
+@ProviderFor(noticeRepository)
+final noticeRepositoryProvider = NoticeRepositoryProvider._();
+
+final class NoticeRepositoryProvider
+    extends
+        $FunctionalProvider<
+          NoticeRepository,
+          NoticeRepository,
+          NoticeRepository
+        >
+    with $Provider<NoticeRepository> {
+  NoticeRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'noticeRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$noticeRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<NoticeRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  NoticeRepository create(Ref ref) {
+    return noticeRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NoticeRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NoticeRepository>(value),
+    );
+  }
+}
+
+String _$noticeRepositoryHash() => r'1f5bf248eb75e2b3d98bc7d2f1202de8eaf9e183';
+
+@ProviderFor(faqRepository)
+final faqRepositoryProvider = FaqRepositoryProvider._();
+
+final class FaqRepositoryProvider
+    extends $FunctionalProvider<FaqRepository, FaqRepository, FaqRepository>
+    with $Provider<FaqRepository> {
+  FaqRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'faqRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$faqRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<FaqRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  FaqRepository create(Ref ref) {
+    return faqRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(FaqRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FaqRepository>(value),
+    );
+  }
+}
+
+String _$faqRepositoryHash() => r'a348edb1882bf46e431a2023f5355197d72dfc23';

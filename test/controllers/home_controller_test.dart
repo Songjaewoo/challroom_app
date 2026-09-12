@@ -28,9 +28,11 @@ void main() {
   );
 
   test('PICK 영상을 불러온다', () async {
-    when(
-      repo.fetchWeeklyPicks,
-    ).thenAnswer((_) async => const [PickVideo(id: 1, title: '3초 텐션', source: 'YouTube Shorts')]);
+    when(repo.fetchWeeklyPicks).thenAnswer(
+      (_) async => const [
+        PickVideo(id: 1, title: '3초 텐션', source: 'YouTube Shorts', videoUrl: 'https://youtube.com/shorts/rgeXcgn7fYc'),
+      ],
+    );
 
     final container = makeContainer();
 

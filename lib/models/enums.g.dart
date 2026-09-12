@@ -6,7 +6,11 @@ part of 'enums.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-const _$RoomStatusEnumMap = {RoomStatus.open: 'open', RoomStatus.ongoing: 'ongoing', RoomStatus.closed: 'closed'};
+const _$RoomStatusEnumMap = {
+  RoomStatus.open: 'open',
+  RoomStatus.ongoing: 'ongoing',
+  RoomStatus.closed: 'closed',
+};
 
 const _$SocialProviderEnumMap = {
   SocialProvider.kakao: 'kakao',
@@ -15,4 +19,13 @@ const _$SocialProviderEnumMap = {
   SocialProvider.apple: 'apple',
 };
 
-const _$RoomCategoryEnumMap = {RoomCategory.dance: 'dance', RoomCategory.workout: 'workout', RoomCategory.swim: 'swim'};
+const _$RoomCategoryEnumMap = {
+  RoomCategory.dance: 'dance',
+  RoomCategory.workout: 'workout',
+  RoomCategory.swim: 'swim',
+};
+
+const _$CommentTargetTypeEnumMap = {
+  CommentTargetType.challenge: 'challenge',
+  CommentTargetType.submission: 'submission',
+};

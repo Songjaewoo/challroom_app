@@ -77,3 +77,19 @@ enum RoomCategory {
     RoomCategory.swim => '수영',
   };
 }
+
+/// 댓글이 달리는 대상 — 챌린지 원본 영상이거나 특정 제출 영상. 두 진입점(챌린지 상세의
+/// "이 영상에 댓글" 행, 제출 영상 그리드의 댓글 배지)이 같은 댓글 바텀시트를 이 구분 하나로 공유한다.
+@JsonEnum(alwaysCreate: true)
+enum CommentTargetType {
+  @JsonValue('challenge')
+  challenge,
+  @JsonValue('submission')
+  submission;
+
+  /// `/challenges/{id}/comments` 또는 `/submissions/{id}/comments` 조립에 쓴다.
+  String get apiSegment => switch (this) {
+    CommentTargetType.challenge => 'challenges',
+    CommentTargetType.submission => 'submissions',
+  };
+}
