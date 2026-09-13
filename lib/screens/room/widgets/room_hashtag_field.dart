@@ -25,30 +25,31 @@ class _RoomHashtagFieldState extends State<RoomHashtagField> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      constraints: const BoxConstraints(minHeight: 44),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(10),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+      constraints: const BoxConstraints(minHeight: 48),
+      decoration: BoxDecoration(color: AppColors.accentSoft, borderRadius: BorderRadius.circular(10)),
+      // 칩이 없을 때(입력창만 있을 때)는 `Wrap` 의 내용 높이가 `minHeight` 보다 작아서, 정렬을
+      // 안 해주면 위쪽에 붙어 버린다 — 세로 중앙 정렬을 명시한다.
+      alignment: Alignment.centerLeft,
       child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
+        spacing: 7,
+        runSpacing: 7,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           for (final tag in widget.hashtags) _HashtagChip(tag: tag, onRemove: () => _remove(tag)),
           SizedBox(
-            width: 90,
+            width: 100,
             child: TextField(
               controller: _controller,
-              style: const TextStyle(fontSize: 12, color: AppColors.ink),
+              style: const TextStyle(fontSize: 15, color: AppColors.ink),
+              // `isDense` 만으로는 InputDecorator 가 기본으로 잡아두는 위아래 여백이 안 없어져
+              // 옆 칩(Chip)과 세로 중앙이 안 맞았다 — `isCollapsed` 로 그 여백까지 없앤다.
               decoration: const InputDecoration(
-                isDense: true,
+                isCollapsed: true,
                 filled: false,
                 border: InputBorder.none,
                 hintText: '태그 추가',
-                hintStyle: TextStyle(fontSize: 12, color: AppColors.inkFaint),
-                contentPadding: EdgeInsets.zero,
+                hintStyle: TextStyle(fontSize: 15, color: AppColors.inkFaint),
               ),
               onSubmitted: _add,
             ),
@@ -79,16 +80,16 @@ class _HashtagChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
       decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(8)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('#$tag', style: const TextStyle(fontSize: 12, color: AppColors.primary)),
+          Text('#$tag', style: const TextStyle(fontSize: 15, color: AppColors.primary)),
           const SizedBox(width: 4),
           GestureDetector(
             onTap: onRemove,
-            child: const Icon(Icons.close, size: 11, color: AppColors.primary),
+            child: const Icon(Icons.close, size: 15, color: AppColors.primary),
           ),
         ],
       ),

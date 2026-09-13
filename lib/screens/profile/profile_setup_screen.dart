@@ -88,7 +88,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: Text(
                   NicknameValidator.message,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12, color: AppColors.inkFaint),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 13.5, color: AppColors.inkFaint),
                 ),
               ),
               const Spacer(),

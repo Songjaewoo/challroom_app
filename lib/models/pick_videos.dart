@@ -21,6 +21,11 @@ abstract class PickVideo with _$PickVideo {
     String? videoUrl,
     String? assetPath,
     String? thumbnailUrl,
+
+    /// 기기에서 직접 업로드한 영상에서 그 자리에서 추출한 미리보기 이미지 — 로컬 파일 경로.
+    /// [thumbnailUrl] 은 서버가 내려주는 원격 썸네일용이라, 우리가 그 자리에서 만든 로컬
+    /// 파일은 구분해서 담는다.
+    String? thumbnailPath,
   }) = _PickVideo;
 
   factory PickVideo.fromJson(Map<String, dynamic> json) => _$PickVideoFromJson(json);

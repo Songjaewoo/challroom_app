@@ -16,7 +16,10 @@ T _$identity<T>(T value) => value;
 mixin _$PickVideo {
 
  int get id; String get title;/// "YouTube Shorts", "직접 업로드" 같은 출처 표기.
- String get source; String? get videoUrl; String? get assetPath; String? get thumbnailUrl;
+ String get source; String? get videoUrl; String? get assetPath; String? get thumbnailUrl;/// 기기에서 직접 업로드한 영상에서 그 자리에서 추출한 미리보기 이미지 — 로컬 파일 경로.
+/// [thumbnailUrl] 은 서버가 내려주는 원격 썸네일용이라, 우리가 그 자리에서 만든 로컬
+/// 파일은 구분해서 담는다.
+ String? get thumbnailPath;
 /// Create a copy of PickVideo
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +32,16 @@ $PickVideoCopyWith<PickVideo> get copyWith => _$PickVideoCopyWithImpl<PickVideo>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PickVideo&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.source, source) || other.source == source)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.assetPath, assetPath) || other.assetPath == assetPath)&&(identical(other.thumbnailUrl, thumbnailUrl) || other.thumbnailUrl == thumbnailUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PickVideo&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.source, source) || other.source == source)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.assetPath, assetPath) || other.assetPath == assetPath)&&(identical(other.thumbnailUrl, thumbnailUrl) || other.thumbnailUrl == thumbnailUrl)&&(identical(other.thumbnailPath, thumbnailPath) || other.thumbnailPath == thumbnailPath));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,source,videoUrl,assetPath,thumbnailUrl);
+int get hashCode => Object.hash(runtimeType,id,title,source,videoUrl,assetPath,thumbnailUrl,thumbnailPath);
 
 @override
 String toString() {
-  return 'PickVideo(id: $id, title: $title, source: $source, videoUrl: $videoUrl, assetPath: $assetPath, thumbnailUrl: $thumbnailUrl)';
+  return 'PickVideo(id: $id, title: $title, source: $source, videoUrl: $videoUrl, assetPath: $assetPath, thumbnailUrl: $thumbnailUrl, thumbnailPath: $thumbnailPath)';
 }
 
 
@@ -49,7 +52,7 @@ abstract mixin class $PickVideoCopyWith<$Res>  {
   factory $PickVideoCopyWith(PickVideo value, $Res Function(PickVideo) _then) = _$PickVideoCopyWithImpl;
 @useResult
 $Res call({
- int id, String title, String source, String? videoUrl, String? assetPath, String? thumbnailUrl
+ int id, String title, String source, String? videoUrl, String? assetPath, String? thumbnailUrl, String? thumbnailPath
 });
 
 
@@ -66,7 +69,7 @@ class _$PickVideoCopyWithImpl<$Res>
 
 /// Create a copy of PickVideo
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? source = null,Object? videoUrl = freezed,Object? assetPath = freezed,Object? thumbnailUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? source = null,Object? videoUrl = freezed,Object? assetPath = freezed,Object? thumbnailUrl = freezed,Object? thumbnailPath = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -74,6 +77,7 @@ as String,source: null == source ? _self.source : source // ignore: cast_nullabl
 as String,videoUrl: freezed == videoUrl ? _self.videoUrl : videoUrl // ignore: cast_nullable_to_non_nullable
 as String?,assetPath: freezed == assetPath ? _self.assetPath : assetPath // ignore: cast_nullable_to_non_nullable
 as String?,thumbnailUrl: freezed == thumbnailUrl ? _self.thumbnailUrl : thumbnailUrl // ignore: cast_nullable_to_non_nullable
+as String?,thumbnailPath: freezed == thumbnailPath ? _self.thumbnailPath : thumbnailPath // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -159,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  String? thumbnailUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  String? thumbnailUrl,  String? thumbnailPath)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PickVideo() when $default != null:
-return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.thumbnailUrl);case _:
+return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.thumbnailUrl,_that.thumbnailPath);case _:
   return orElse();
 
 }
@@ -180,10 +184,10 @@ return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  String? thumbnailUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  String? thumbnailUrl,  String? thumbnailPath)  $default,) {final _that = this;
 switch (_that) {
 case _PickVideo():
-return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.thumbnailUrl);case _:
+return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.thumbnailUrl,_that.thumbnailPath);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +204,10 @@ return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  String? thumbnailUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  String? thumbnailUrl,  String? thumbnailPath)?  $default,) {final _that = this;
 switch (_that) {
 case _PickVideo() when $default != null:
-return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.thumbnailUrl);case _:
+return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.thumbnailUrl,_that.thumbnailPath);case _:
   return null;
 
 }
@@ -215,7 +219,7 @@ return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath
 @JsonSerializable()
 
 class _PickVideo implements PickVideo {
-  const _PickVideo({required this.id, required this.title, required this.source, this.videoUrl, this.assetPath, this.thumbnailUrl});
+  const _PickVideo({required this.id, required this.title, required this.source, this.videoUrl, this.assetPath, this.thumbnailUrl, this.thumbnailPath});
   factory _PickVideo.fromJson(Map<String, dynamic> json) => _$PickVideoFromJson(json);
 
 @override final  int id;
@@ -225,6 +229,10 @@ class _PickVideo implements PickVideo {
 @override final  String? videoUrl;
 @override final  String? assetPath;
 @override final  String? thumbnailUrl;
+/// 기기에서 직접 업로드한 영상에서 그 자리에서 추출한 미리보기 이미지 — 로컬 파일 경로.
+/// [thumbnailUrl] 은 서버가 내려주는 원격 썸네일용이라, 우리가 그 자리에서 만든 로컬
+/// 파일은 구분해서 담는다.
+@override final  String? thumbnailPath;
 
 /// Create a copy of PickVideo
 /// with the given fields replaced by the non-null parameter values.
@@ -239,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PickVideo&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.source, source) || other.source == source)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.assetPath, assetPath) || other.assetPath == assetPath)&&(identical(other.thumbnailUrl, thumbnailUrl) || other.thumbnailUrl == thumbnailUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PickVideo&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.source, source) || other.source == source)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.assetPath, assetPath) || other.assetPath == assetPath)&&(identical(other.thumbnailUrl, thumbnailUrl) || other.thumbnailUrl == thumbnailUrl)&&(identical(other.thumbnailPath, thumbnailPath) || other.thumbnailPath == thumbnailPath));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,source,videoUrl,assetPath,thumbnailUrl);
+int get hashCode => Object.hash(runtimeType,id,title,source,videoUrl,assetPath,thumbnailUrl,thumbnailPath);
 
 @override
 String toString() {
-  return 'PickVideo(id: $id, title: $title, source: $source, videoUrl: $videoUrl, assetPath: $assetPath, thumbnailUrl: $thumbnailUrl)';
+  return 'PickVideo(id: $id, title: $title, source: $source, videoUrl: $videoUrl, assetPath: $assetPath, thumbnailUrl: $thumbnailUrl, thumbnailPath: $thumbnailPath)';
 }
 
 
@@ -259,7 +267,7 @@ abstract mixin class _$PickVideoCopyWith<$Res> implements $PickVideoCopyWith<$Re
   factory _$PickVideoCopyWith(_PickVideo value, $Res Function(_PickVideo) _then) = __$PickVideoCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String title, String source, String? videoUrl, String? assetPath, String? thumbnailUrl
+ int id, String title, String source, String? videoUrl, String? assetPath, String? thumbnailUrl, String? thumbnailPath
 });
 
 
@@ -276,7 +284,7 @@ class __$PickVideoCopyWithImpl<$Res>
 
 /// Create a copy of PickVideo
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? source = null,Object? videoUrl = freezed,Object? assetPath = freezed,Object? thumbnailUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? source = null,Object? videoUrl = freezed,Object? assetPath = freezed,Object? thumbnailUrl = freezed,Object? thumbnailPath = freezed,}) {
   return _then(_PickVideo(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -284,6 +292,7 @@ as String,source: null == source ? _self.source : source // ignore: cast_nullabl
 as String,videoUrl: freezed == videoUrl ? _self.videoUrl : videoUrl // ignore: cast_nullable_to_non_nullable
 as String?,assetPath: freezed == assetPath ? _self.assetPath : assetPath // ignore: cast_nullable_to_non_nullable
 as String?,thumbnailUrl: freezed == thumbnailUrl ? _self.thumbnailUrl : thumbnailUrl // ignore: cast_nullable_to_non_nullable
+as String?,thumbnailPath: freezed == thumbnailPath ? _self.thumbnailPath : thumbnailPath // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

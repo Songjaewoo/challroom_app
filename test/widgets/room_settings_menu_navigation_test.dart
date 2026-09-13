@@ -31,6 +31,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // PICK 카드 영역이 커지면서 방 목록이 화면 아래로 밀려날 수 있다 — 홈의 ListView 는
+    // (lazy 가 아니라) 자식을 다 미리 만들어서 `scrollUntilVisible` 은 이미 "찾았다"고
+    // 오판한다. 실제 뷰포트 기준으로 스크롤하는 `ensureVisible` 을 써야 한다.
+    await tester.ensureVisible(find.text(roomTitle));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(roomTitle));
     await tester.pumpAndSettle();
   }

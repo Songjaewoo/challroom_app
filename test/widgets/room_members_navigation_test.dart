@@ -83,6 +83,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // 홈의 ListView 는 자식을 미리 다 만들어서 `scrollUntilVisible` 은 이미 찾았다고 오판한다
+    // — 실제 뷰포트 기준으로 스크롤하는 `ensureVisible` 을 쓴다.
+    await tester.ensureVisible(find.text('눈빛 승부 한판 붙자'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('눈빛 승부 한판 붙자'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('멤버 2명'));
@@ -90,5 +94,56 @@ void main() {
 
     expect(find.text('초대 코드가 아직 없어요'), findsNothing);
     expect(find.text('내보내기'), findsNothing);
+  });
+
+  testWidgets('방장이 신청을 수락하면 멤버로 편입되고, 거절하면 목록에서 사라진다', (tester) async {
+    final storage = _TokenStorage();
+    final userRepo = _UserRepository();
+    when(storage.readAccessToken).thenAnswer((_) async => 'saved-token');
+    when(userRepo.fetchMe).thenAnswer((_) async => _user);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tokenStorageProvider.overrideWithValue(storage),
+          userRepositoryProvider.overrideWithValue(userRepo),
+        ],
+        child: const App(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('우리끼리 텐션 챌린지'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('멤버 4명'));
+    await tester.pumpAndSettle();
+
+    // 1번 방(방장 '하늘')엔 데모로 '유진'/'태호' 가 신청 대기 중으로 심어져 있다.
+    expect(find.text('신청 대기 중 (2)'), findsOneWidget);
+    expect(find.text('유진'), findsOneWidget);
+    expect(find.text('태호'), findsOneWidget);
+
+    // 유진을 수락 — 확인 다이얼로그를 거쳐 대기 목록에서 빠지고 멤버로 들어간다.
+    await tester.tap(find.text('수락').first);
+    await tester.pumpAndSettle();
+    expect(find.text('신청 수락'), findsOneWidget);
+
+    await tester.tap(find.text('수락하기'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('신청 대기 중 (1)'), findsOneWidget);
+    expect(find.text('우리끼리 텐션 챌린지 · 멤버 5명'), findsOneWidget);
+
+    // 태호를 거절 — 확인 다이얼로그를 거쳐 목록에서 사라지고, 멤버로는 안 들어간다.
+    await tester.tap(find.text('거절').first);
+    await tester.pumpAndSettle();
+    expect(find.text('신청 거절'), findsOneWidget);
+
+    await tester.tap(find.text('거절하기'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('신청 대기 중 (0)'), findsNothing); // 다 처리되면 섹션 자체가 사라진다.
+    expect(find.text('태호'), findsNothing);
+    expect(find.text('우리끼리 텐션 챌린지 · 멤버 5명'), findsOneWidget); // 거절은 인원수를 안 바꾼다.
   });
 }

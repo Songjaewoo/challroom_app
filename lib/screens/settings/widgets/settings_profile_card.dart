@@ -17,10 +17,7 @@ class SettingsProfileCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(14),
-        ),
+        decoration: BoxDecoration(color: AppColors.accentSoft, borderRadius: BorderRadius.circular(14)),
         child: Row(
           children: [
             CircleAvatar(
@@ -38,14 +35,14 @@ class SettingsProfileCard extends StatelessWidget {
                 children: [
                   Text(
                     nickname,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink),
                   ),
                   const SizedBox(height: 2),
-                  const Text('닉네임 · 프로필 사진 변경', style: TextStyle(fontSize: 12, color: AppColors.inkMuted)),
+                  const Text('닉네임 · 프로필 사진 변경', style: TextStyle(fontSize: 13.5, color: AppColors.inkMuted)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkFaint),
+            const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.inkFaint),
           ],
         ),
       ),

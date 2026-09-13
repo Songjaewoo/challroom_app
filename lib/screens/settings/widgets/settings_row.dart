@@ -21,22 +21,22 @@ class SettingsRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: AppColors.inkMuted),
+            Icon(icon, size: 22, color: AppColors.inkMuted),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.ink),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.ink),
               ),
             ),
             if (trailingText != null) ...[
-              Text(trailingText!, style: const TextStyle(fontSize: 12.5, color: AppColors.inkMuted)),
+              Text(trailingText!, style: const TextStyle(fontSize: 14, color: AppColors.inkMuted)),
               const SizedBox(width: 6),
             ],
             if (trailing != null)
               trailing!
             else if (onTap != null)
-              const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkFaint),
+              const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.inkFaint),
           ],
         ),
       ),
@@ -44,7 +44,7 @@ class SettingsRow extends StatelessWidget {
   }
 }
 
-/// [SettingsRow] 들을 테두리로 감싸고 사이에 구분선을 넣는다.
+/// [SettingsRow] 들을 한 면 색으로 묶고 사이에 구분선을 넣는다.
 class SettingsGroup extends StatelessWidget {
   const SettingsGroup({required this.children, super.key});
 
@@ -53,10 +53,7 @@ class SettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: BoxDecoration(color: AppColors.accentSoft, borderRadius: BorderRadius.circular(14)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: Column(
@@ -84,7 +81,7 @@ class SettingsSectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.inkMuted),
+        style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.inkMuted),
       ),
     );
   }

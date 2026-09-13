@@ -51,14 +51,11 @@ class _FaqGroupedList extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               entry.key,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.inkMuted),
+              style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.inkMuted),
             ),
           ),
           DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.border),
-              borderRadius: BorderRadius.circular(14),
-            ),
+            decoration: BoxDecoration(color: AppColors.accentSoft, borderRadius: BorderRadius.circular(14)),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(14),
               child: Column(
@@ -92,18 +89,18 @@ class _FaqTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         child: Row(
           children: [
-            const Text('Q', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+            const Text('Q', style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: AppColors.primary)),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 faq.question,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.ink),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.ink),
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkFaint),
+            const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.inkFaint),
           ],
         ),
       ),

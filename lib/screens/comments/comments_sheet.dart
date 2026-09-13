@@ -106,7 +106,7 @@ class _CommentsSheetState extends ConsumerState<CommentsSheet> {
                           child: Text.rich(
                             TextSpan(
                               text: '${widget.title} · 댓글 ',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                              style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700, color: AppColors.ink),
                               children: [
                                 TextSpan(
                                   text: '${comments.value?.length ?? ''}',
@@ -120,7 +120,7 @@ class _CommentsSheetState extends ConsumerState<CommentsSheet> {
                         ),
                         IconButton(
                           onPressed: () => Navigator.of(context).maybePop(),
-                          icon: const Icon(Icons.close, size: 20, color: AppColors.inkMuted),
+                          icon: const Icon(Icons.close, size: 22, color: AppColors.inkMuted),
                           visualDensity: VisualDensity.compact,
                         ),
                       ],
@@ -196,7 +196,7 @@ class _CommentRow extends StatelessWidget {
           backgroundColor: avatarColorFor(comment.nickname),
           child: Text(
             comment.nickname.substring(0, 1),
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.onBrand),
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.onBrand),
           ),
         ),
         const SizedBox(width: 10),
@@ -206,13 +206,13 @@ class _CommentRow extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(comment.nickname, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                  Text(comment.nickname, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
                   const SizedBox(width: 6),
-                  Text(relativeTimeKo(comment.createdAt), style: const TextStyle(fontSize: 10.5, color: AppColors.inkFaint)),
+                  Text(relativeTimeKo(comment.createdAt), style: const TextStyle(fontSize: 12, color: AppColors.inkFaint)),
                 ],
               ),
               const SizedBox(height: 3),
-              Text(comment.text, style: const TextStyle(fontSize: 13, color: AppColors.ink, height: 1.4)),
+              Text(comment.text, style: const TextStyle(fontSize: 14.5, color: AppColors.ink, height: 1.4)),
             ],
           ),
         ),
@@ -221,12 +221,12 @@ class _CommentRow extends StatelessWidget {
           children: [
             Icon(
               comment.likedByMe ? Icons.favorite : Icons.favorite_border,
-              size: 16,
+              size: 18,
               color: comment.likedByMe ? AppColors.primary : AppColors.inkFaint,
             ),
             if (comment.likeCount > 0) ...[
               const SizedBox(height: 2),
-              Text('${comment.likeCount}', style: const TextStyle(fontSize: 9.5, color: AppColors.inkFaint)),
+              Text('${comment.likeCount}', style: const TextStyle(fontSize: 11, color: AppColors.inkFaint)),
             ],
           ],
         ),
@@ -257,7 +257,7 @@ class _CommentInputBar extends ConsumerWidget {
                 ? null
                 : Text(
                     nickname.substring(0, 1),
-                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.onBrand),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.onBrand),
                   ),
           ),
           const SizedBox(width: 8),
@@ -267,10 +267,10 @@ class _CommentInputBar extends ConsumerWidget {
               enabled: !sending,
               minLines: 1,
               maxLines: 4,
-              style: const TextStyle(fontSize: 13, color: AppColors.ink),
+              style: const TextStyle(fontSize: 14.5, color: AppColors.ink),
               decoration: InputDecoration(
                 hintText: '댓글을 남겨보세요',
-                hintStyle: const TextStyle(fontSize: 13, color: AppColors.inkFaint),
+                hintStyle: const TextStyle(fontSize: 14.5, color: AppColors.inkFaint),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
               ),
@@ -286,7 +286,7 @@ class _CommentInputBar extends ConsumerWidget {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
                   )
-                : const Icon(Icons.send_rounded, color: AppColors.primary, size: 20),
+                : const Icon(Icons.send_rounded, color: AppColors.primary, size: 22),
           ),
         ],
       ),

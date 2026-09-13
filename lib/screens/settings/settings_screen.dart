@@ -145,7 +145,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           )
                         : const Text(
                             '로그아웃',
-                            style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.ink),
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.ink),
                           ),
                   ),
                 ),
@@ -155,7 +155,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onTap: () => showComingSoon(context, '회원 탈퇴'),
                     child: const Text(
                       '회원 탈퇴',
-                      style: TextStyle(fontSize: 11.5, color: AppColors.inkFaint, decoration: TextDecoration.underline),
+                      style: TextStyle(fontSize: 13, color: AppColors.inkFaint, decoration: TextDecoration.underline),
                     ),
                   ),
                 ),

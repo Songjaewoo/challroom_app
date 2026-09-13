@@ -22,6 +22,7 @@ class RoomEditScreen extends ConsumerStatefulWidget {
 
 class _RoomEditScreenState extends ConsumerState<RoomEditScreen> {
   late final TextEditingController _titleController;
+  late final TextEditingController _descriptionController;
   late var _hashtags = widget.initial.hashtags;
   late var _isPublic = widget.initial.isPublic;
 
@@ -29,11 +30,13 @@ class _RoomEditScreenState extends ConsumerState<RoomEditScreen> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.initial.title)..addListener(() => setState(() {}));
+    _descriptionController = TextEditingController(text: widget.initial.description);
   }
 
   @override
   void dispose() {
     _titleController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -71,7 +74,19 @@ class _RoomEditScreenState extends ConsumerState<RoomEditScreen> {
             TextField(
               controller: _titleController,
               enabled: !busy,
+              style: const TextStyle(fontSize: 16),
               decoration: const InputDecoration(hintText: '예: 우리끼리 텐션 챌린지'),
+            ),
+            const SizedBox(height: 16),
+            const _FieldLabel('상세 설명'),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _descriptionController,
+              enabled: !busy,
+              minLines: 3,
+              maxLines: 6,
+              style: const TextStyle(fontSize: 15.5),
+              decoration: const InputDecoration(hintText: '어떤 챌린지인지, 어떻게 참여하면 되는지 알려주세요 (선택)'),
             ),
             const SizedBox(height: 16),
             const _FieldLabel('해시태그'),
@@ -86,7 +101,7 @@ class _RoomEditScreenState extends ConsumerState<RoomEditScreen> {
                     children: [
                       const Text(
                         '공개 방',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.ink),
+                        style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: AppColors.ink),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -117,9 +132,17 @@ class _RoomEditScreenState extends ConsumerState<RoomEditScreen> {
   }
 
   Future<void> _submit() async {
+    final description = _descriptionController.text.trim();
     await ref
         .read(roomEditProvider(widget.roomId).notifier)
-        .submit(RoomUpdateReq(title: _titleController.text.trim(), hashtags: _hashtags, isPublic: _isPublic));
+        .submit(
+          RoomUpdateReq(
+            title: _titleController.text.trim(),
+            description: description.isEmpty ? null : description,
+            hashtags: _hashtags,
+            isPublic: _isPublic,
+          ),
+        );
     if (!mounted) return;
 
     // 실패했으면 에러 스낵바가 이미 떴다 — 화면에 남아서 다시 시도할 수 있게 한다.
@@ -137,7 +160,7 @@ class _FieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.inkMuted),
+      style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.inkMuted),
     );
   }
 }

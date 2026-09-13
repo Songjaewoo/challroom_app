@@ -53,7 +53,7 @@ class _NoticeTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(6)),
-              child: const Text('공지', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.primary)),
+              child: const Text('공지', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
             ),
             const SizedBox(width: 8),
           ],
@@ -62,16 +62,16 @@ class _NoticeTile extends StatelessWidget {
               notice.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.ink),
+              style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w500, color: AppColors.ink),
             ),
           ),
         ],
       ),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 4),
-        child: Text(_formatDate(notice.createdAt), style: const TextStyle(fontSize: 11.5, color: AppColors.inkFaint)),
+        child: Text(_formatDate(notice.createdAt), style: const TextStyle(fontSize: 13, color: AppColors.inkFaint)),
       ),
-      trailing: const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkFaint),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.inkFaint),
     );
   }
 

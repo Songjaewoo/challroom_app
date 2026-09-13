@@ -5,10 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../controllers/challenge_detail_controller.dart';
+import '../../controllers/challenge_like_controller.dart';
 import '../../core/error/error_message.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/enums.dart';
+import '../../models/reports.dart';
 import '../../models/rooms.dart';
 import '../../shared/avatar_color.dart';
 import '../../shared/coming_soon.dart';
@@ -32,7 +34,29 @@ class ChallengeDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: detail.whenOrNull(data: (c) => Text(c.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
-        actions: [IconButton(onPressed: () => showComingSoon(context, '챌린지 설정'), icon: const Icon(Icons.more_vert))],
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            color: AppColors.surface,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppColors.border),
+            ),
+            onSelected: (_) => detail.whenOrNull(
+              data: (c) => context.push(
+                RoutePath.report,
+                extra: (target: (type: ReportTargetType.challenge, id: c.id), targetLabel: c.title),
+              ),
+            ),
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'report',
+                child: Text('원본 영상 신고', style: TextStyle(fontSize: 15, color: AppColors.danger)),
+              ),
+            ],
+          ),
+        ],
       ),
       body: detail.when(
         loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
@@ -46,13 +70,13 @@ class ChallengeDetailScreen extends ConsumerWidget {
   }
 }
 
-class _ChallengeDetailBody extends StatelessWidget {
+class _ChallengeDetailBody extends ConsumerWidget {
   const _ChallengeDetailBody({required this.challenge});
 
   final ChallengeDetail challenge;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final style = thumbnailStyleFor(challenge.id);
     final submittedCount = challenge.submissions.length;
     final submitters = [for (final submission in challenge.submissions) ParticipantInfo(nickname: submission.nickname)];
@@ -79,7 +103,7 @@ class _ChallengeDetailBody extends StatelessWidget {
                         children: [
                           Text(
                             '$submittedCount/${challenge.totalCount}명 제출 완료',
-                            style: const TextStyle(fontSize: 11, color: AppColors.inkMuted),
+                            style: const TextStyle(fontSize: 12.5, color: AppColors.inkMuted),
                           ),
                           const SizedBox(height: 8),
                           if (submitters.isNotEmpty)
@@ -88,7 +112,7 @@ class _ChallengeDetailBody extends StatelessWidget {
                       ),
                       FilledButton.icon(
                         onPressed: () => showComingSoon(context, '따라 찍기'),
-                        icon: const Icon(Icons.videocam_outlined, size: 15),
+                        icon: const Icon(Icons.videocam_outlined, size: 17),
                         label: const Text('따라 찍기'),
                         style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(40)),
                       ),
@@ -99,41 +123,76 @@ class _ChallengeDetailBody extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          InkWell(
-            onTap: () => showCommentsSheet(
-              context,
-              target: (type: CommentTargetType.challenge, id: challenge.id),
-              title: challenge.title,
-            ),
-            child: Container(
-              padding: const EdgeInsets.only(bottom: 12),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.border)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.chat_bubble_outline, size: 16, color: AppColors.inkMuted),
-                  const SizedBox(width: 6),
-                  Text('이 영상에 댓글', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.inkMuted)),
-                  const Spacer(),
-                  Text(
-                    '${challenge.commentCount}',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+          Container(
+            padding: const EdgeInsets.only(bottom: 12),
+            decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border))),
+            child: Row(
+              children: [
+                InkWell(
+                  borderRadius: BorderRadius.circular(6),
+                  onTap: () => ref.read(challengeLikeProvider(challenge.id).notifier).toggleChallenge(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          challenge.isLikedByMe ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          size: 18,
+                          color: challenge.isLikedByMe ? AppColors.primary : AppColors.inkMuted,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          '${challenge.likeCount}',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: challenge.isLikedByMe ? AppColors.primary : AppColors.inkMuted,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(6),
+                    onTap: () => showCommentsSheet(
+                      context,
+                      target: (type: CommentTargetType.challenge, id: challenge.id),
+                      title: challenge.title,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.chat_bubble_outline, size: 18, color: AppColors.inkMuted),
+                        const SizedBox(width: 6),
+                        Text(
+                          '이 영상에 댓글',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.inkMuted),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${challenge.commentCount}',
+                          style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: AppColors.primary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 14),
           const Text(
             '제출된 영상',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.ink),
+            style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: AppColors.ink),
           ),
           const SizedBox(height: 10),
           Expanded(
             child: challenge.submissions.isEmpty
                 ? const Center(
-                    child: Text('아직 제출된 영상이 없어요.', style: TextStyle(fontSize: 13, color: AppColors.inkMuted)),
+                    child: Text('아직 제출된 영상이 없어요.', style: TextStyle(fontSize: 14.5, color: AppColors.inkMuted)),
                   )
                 : GridView.builder(
                     padding: const EdgeInsets.only(bottom: 16),
@@ -144,8 +203,11 @@ class _ChallengeDetailBody extends StatelessWidget {
                       childAspectRatio: 9 / 16,
                     ),
                     itemCount: challenge.submissions.length,
-                    itemBuilder: (_, index) =>
-                        SubmissionGridTile(submission: challenge.submissions[index], colorIndex: index),
+                    itemBuilder: (_, index) => SubmissionGridTile(
+                      submission: challenge.submissions[index],
+                      colorIndex: index,
+                      challengeId: challenge.id,
+                    ),
                   ),
           ),
         ],
@@ -184,7 +246,7 @@ class _OriginalVideoThumbnail extends StatelessWidget {
                   color: Colors.black.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: Text(challenge.source, style: const TextStyle(fontSize: 9, color: AppColors.onBrand)),
+                child: Text(challenge.source, style: const TextStyle(fontSize: 10.5, color: AppColors.onBrand)),
               ),
             ),
           ],
@@ -196,7 +258,14 @@ class _OriginalVideoThumbnail extends StatelessWidget {
   void _open(BuildContext context) {
     final assetPath = challenge.assetPath;
     if (assetPath != null) {
-      context.push(RoutePath.assetVideoPlayer, extra: (title: challenge.title, assetPath: assetPath));
+      context.push(
+        RoutePath.assetVideoPlayer,
+        extra: (
+          title: challenge.title,
+          assetPath: assetPath,
+          reportTarget: (type: ReportTargetType.challenge, id: challenge.id),
+        ),
+      );
       return;
     }
     final url = challenge.videoUrl;

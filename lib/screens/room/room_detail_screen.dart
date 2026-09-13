@@ -50,6 +50,10 @@ class RoomDetailScreen extends ConsumerWidget {
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w500, color: AppColors.ink),
               ),
+              if (room.description case final description? when description.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(description, style: const TextStyle(fontSize: 14.5, color: AppColors.inkMuted, height: 1.4)),
+              ],
               const SizedBox(height: 8),
               InkWell(
                 borderRadius: BorderRadius.circular(8),
@@ -58,9 +62,9 @@ class RoomDetailScreen extends ConsumerWidget {
                   children: [
                     ParticipantAvatarStack(participants: room.members, max: room.members.length),
                     const SizedBox(width: 8),
-                    Text('멤버 ${room.memberCount}명', style: const TextStyle(fontSize: 11, color: AppColors.inkMuted)),
+                    Text('멤버 ${room.memberCount}명', style: const TextStyle(fontSize: 12.5, color: AppColors.inkMuted)),
                     const SizedBox(width: 2),
-                    const Icon(Icons.chevron_right_rounded, size: 14, color: AppColors.inkFaint),
+                    const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.inkFaint),
                   ],
                 ),
               ),
@@ -70,16 +74,17 @@ class RoomDetailScreen extends ConsumerWidget {
                 children: [
                   Text(
                     '챌린지 영상 ${room.challenges.length}개',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.ink),
+                    style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: AppColors.ink),
                   ),
                   GestureDetector(
                     onTap: () => showComingSoon(context, '영상 추가'),
+                    // "추가" 액션이라 진행형 CTA(핑크)와 구분해서 코랄(logoMid)을 쓴다.
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.add, size: 14, color: AppColors.primary),
+                        Icon(Icons.add, size: 16, color: AppColors.logoMid),
                         SizedBox(width: 2),
-                        Text('영상 추가', style: TextStyle(fontSize: 12, color: AppColors.primary)),
+                        Text('영상 추가', style: TextStyle(fontSize: 13.5, color: AppColors.logoMid)),
                       ],
                     ),
                   ),
@@ -89,7 +94,7 @@ class RoomDetailScreen extends ConsumerWidget {
               Expanded(
                 child: room.challenges.isEmpty
                     ? const Center(
-                        child: Text('아직 등록된 챌린지 영상이 없어요.', style: TextStyle(fontSize: 13, color: AppColors.inkMuted)),
+                        child: Text('아직 등록된 챌린지 영상이 없어요.', style: TextStyle(fontSize: 14.5, color: AppColors.inkMuted)),
                       )
                     : ListView.separated(
                         itemCount: room.challenges.length,

@@ -58,7 +58,7 @@ class RoomSettingsMenuButton extends StatelessWidget {
               child: Text(
                 action.label,
                 style: TextStyle(
-                  fontSize: 13.5,
+                  fontSize: 15,
                   color: action.destructive ? AppColors.primary : AppColors.ink,
                 ),
               ),

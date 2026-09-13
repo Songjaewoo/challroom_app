@@ -68,7 +68,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
             children: [
               const Text(
                 '친구에게 받은 초대 코드를 입력하세요',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink),
+                style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w600, color: AppColors.ink),
               ),
               const SizedBox(height: 16),
               TextField(

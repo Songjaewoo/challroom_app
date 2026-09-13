@@ -35,7 +35,7 @@ class MyRoomsScreen extends ConsumerWidget {
                 const Spacer(),
                 TextButton.icon(
                   onPressed: () => context.push(RoutePath.joinRoom),
-                  icon: const Icon(Icons.qr_code_2_outlined, size: 16),
+                  icon: const Icon(Icons.qr_code_2_outlined, size: 18),
                   label: const Text('코드로 참여'),
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.primary,

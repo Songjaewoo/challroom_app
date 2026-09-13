@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../controllers/notifications_controller.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/coming_soon.dart';
 import '../../../shared/widgets/app_logo_mark.dart';
 
 /// 로고 · 앱 이름 · 알림/검색. 홈 탭 전용이라 Scaffold 의 AppBar 대신 콘텐츠 맨 위에 둔다.
-class HomeHeader extends StatelessWidget {
+class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unreadCount = ref.watch(unreadNotificationCountProvider).value ?? 0;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 12, 10, 6),
       child: Row(
@@ -22,8 +28,13 @@ class HomeHeader extends StatelessWidget {
           ),
           const Spacer(),
           IconButton(
-            onPressed: () => showComingSoon(context, '알림'),
-            icon: const Icon(Icons.notifications_outlined, color: AppColors.inkMuted),
+            onPressed: () => context.push(RoutePath.notifications),
+            icon: Badge(
+              isLabelVisible: unreadCount > 0,
+              backgroundColor: AppColors.primary,
+              smallSize: 8,
+              child: const Icon(Icons.notifications_outlined, color: AppColors.inkMuted),
+            ),
           ),
           IconButton(
             onPressed: () => showComingSoon(context, '검색'),

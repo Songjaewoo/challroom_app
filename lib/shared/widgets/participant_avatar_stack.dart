@@ -55,7 +55,7 @@ class _Bubble extends StatelessWidget {
       ),
       child: Text(
         nickname.substring(0, 1),
-        style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w500, color: AppColors.onBrand),
+        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: AppColors.onBrand),
       ),
     );
   }

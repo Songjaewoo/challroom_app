@@ -14,8 +14,10 @@ import '../../screens/faq/faq_list_screen.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/notice/notice_detail_screen.dart';
 import '../../screens/notice/notice_list_screen.dart';
+import '../../screens/notifications/notifications_screen.dart';
 import '../../screens/profile/profile_edit_screen.dart';
 import '../../screens/profile/profile_setup_screen.dart';
+import '../../screens/report/report_screen.dart';
 import '../../screens/room/create_room_screen.dart';
 import '../../screens/room/join_room_screen.dart';
 import '../../screens/room/room_detail_screen.dart';
@@ -44,6 +46,12 @@ abstract final class RoutePath {
 
   /// 초대 코드를 입력해 방에 들어간다 — "내 방" 탭의 "코드로 참여" 로 들어온다.
   static const joinRoom = '/join-room';
+
+  static const notifications = '/notifications';
+
+  /// `extra` 로 [ReportScreenArgs] 를 넘긴다 — 챌린지 원본 영상이든 제출 영상이든 이 화면
+  /// 하나를 같이 쓴다.
+  static const report = '/report';
 
   static const noticeList = '/notices';
   static const noticeDetail = '/notices/:id';
@@ -128,6 +136,14 @@ GoRouter appRouter(Ref ref) {
         },
       ),
       GoRoute(path: RoutePath.joinRoom, builder: (_, _) => const JoinRoomScreen()),
+      GoRoute(path: RoutePath.notifications, builder: (_, _) => const NotificationsScreen()),
+      GoRoute(
+        path: RoutePath.report,
+        builder: (_, state) {
+          final args = state.extra! as ReportScreenArgs;
+          return ReportScreen(target: args.target, targetLabel: args.targetLabel);
+        },
+      ),
       GoRoute(path: RoutePath.noticeList, builder: (_, _) => const NoticeListScreen()),
       GoRoute(
         path: RoutePath.noticeDetail,

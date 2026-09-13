@@ -24,20 +24,20 @@ class FaqDetailScreen extends StatelessWidget {
                 decoration: BoxDecoration(color: AppColors.accentSoft, borderRadius: BorderRadius.circular(6)),
                 child: Text(
                   faq.category,
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.inkMuted),
+                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.inkMuted),
                 ),
               ),
               const SizedBox(height: 14),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Q', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primary)),
+                  const Text('Q', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.primary)),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       faq.question,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: AppColors.ink,
                         height: 1.4,
@@ -52,12 +52,12 @@ class FaqDetailScreen extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('A', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.success)),
+                  const Text('A', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.success)),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       faq.answer,
-                      style: const TextStyle(fontSize: 14, color: AppColors.ink, height: 1.6),
+                      style: const TextStyle(fontSize: 15.5, color: AppColors.ink, height: 1.6),
                     ),
                   ),
                 ],
