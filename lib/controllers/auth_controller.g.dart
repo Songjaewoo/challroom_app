@@ -41,7 +41,7 @@ final class AuthProvider extends $AsyncNotifierProvider<Auth, User?> {
   Auth create() => Auth();
 }
 
-String _$authHash() => r'dba89d691464ff2d82693344c79b65c8e8af8690';
+String _$authHash() => r'019b8585d7c6dc2b0a5eca75fdf51020a46e0931';
 
 /// 로그인 상태. `null` 이면 로그아웃, 값이 있으면 로그인된 유저다.
 ///

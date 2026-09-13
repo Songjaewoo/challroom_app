@@ -32,6 +32,25 @@ abstract interface class RoomRepository {
 
   /// 초대 코드로 방에 들어간다. 코드가 유효하지 않으면 실패한다.
   Future<Room> joinRoomByCode(String code);
+
+  /// 모집 중인 방에 참가 신청을 보낸다 — 방장이 수락하기 전까지는 멤버가 아니다.
+  /// 신청한 방은 "내 방" 목록에도 [Room.isApplied] 가 `true` 인 채로 같이 보인다.
+  Future<void> applyToRoom(int roomId);
+
+  /// 보낸 참가 신청을 취소한다.
+  Future<void> cancelApplication(int roomId);
+
+  /// 방장만 할 수 있다 — 신청자를 수락해 멤버로 편입한다.
+  Future<RoomDetail> acceptApplicant(int roomId, String nickname);
+
+  /// 방장만 할 수 있다 — 신청을 거절한다(멤버가 되지 않는다).
+  Future<RoomDetail> rejectApplicant(int roomId, String nickname);
+
+  /// 챌린지 원본 영상 좋아요를 껐다 켰다 한다.
+  Future<ChallengeDetail> toggleChallengeLike(int challengeId);
+
+  /// 제출 영상 하나의 좋아요를 껐다 켰다 한다.
+  Future<ChallengeDetail> toggleSubmissionLike(int challengeId, int submissionId);
 }
 
 class DioRoomRepository implements RoomRepository {
@@ -100,5 +119,39 @@ class DioRoomRepository implements RoomRepository {
   Future<Room> joinRoomByCode(String code) async {
     final res = await _dio.post<Map<String, dynamic>>('/rooms/join', data: {'code': code});
     return Room.fromJson(res.data!);
+  }
+
+  @override
+  Future<void> applyToRoom(int roomId) async {
+    await _dio.post<void>('/rooms/$roomId/apply');
+  }
+
+  @override
+  Future<void> cancelApplication(int roomId) async {
+    await _dio.delete<void>('/rooms/$roomId/apply');
+  }
+
+  @override
+  Future<RoomDetail> acceptApplicant(int roomId, String nickname) async {
+    final res = await _dio.post<Map<String, dynamic>>('/rooms/$roomId/applicants/$nickname/accept');
+    return RoomDetail.fromJson(res.data!);
+  }
+
+  @override
+  Future<RoomDetail> rejectApplicant(int roomId, String nickname) async {
+    final res = await _dio.delete<Map<String, dynamic>>('/rooms/$roomId/applicants/$nickname');
+    return RoomDetail.fromJson(res.data!);
+  }
+
+  @override
+  Future<ChallengeDetail> toggleChallengeLike(int challengeId) async {
+    final res = await _dio.post<Map<String, dynamic>>('/challenges/$challengeId/like');
+    return ChallengeDetail.fromJson(res.data!);
+  }
+
+  @override
+  Future<ChallengeDetail> toggleSubmissionLike(int challengeId, int submissionId) async {
+    final res = await _dio.post<Map<String, dynamic>>('/challenges/$challengeId/submissions/$submissionId/like');
+    return ChallengeDetail.fromJson(res.data!);
   }
 }

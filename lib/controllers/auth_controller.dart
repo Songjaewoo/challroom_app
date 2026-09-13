@@ -37,7 +37,7 @@ class Auth extends _$Auth {
 
       await ref
           .read(tokenStorageProvider)
-          .saveTokens(accessToken: result.tokens.accessToken, refreshToken: result.tokens.refreshToken);
+          .saveTokens(accessToken: result.accessToken, refreshToken: result.refreshToken);
 
       return result.user;
     });

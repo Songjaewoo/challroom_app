@@ -7,6 +7,7 @@ import '../../models/submissions.dart';
 import '../../repositories/room_repository.dart';
 import '../../repositories/user_repository.dart';
 import '../error/api_exception.dart';
+import '../network/room_api_client.dart';
 
 /// `API_BASE_URL` 이 없을 때(지금 상태) 홈 화면을 미리 보기 위한 샘플 데이터.
 /// `providers.dart` 가 실제 서버가 붙으면 자동으로 [DioRoomRepository] 로 돌아간다.
@@ -15,9 +16,14 @@ import '../error/api_exception.dart';
 /// [roomRepositoryProvider] 가 `keepAlive` 인 이유도 이 상태를 앱이 켜 있는 동안 유지하기
 /// 위해서다. 앱을 다시 켜면 초기화된다.
 class LocalRoomRepository implements RoomRepository {
-  LocalRoomRepository(this._userRepository);
+  LocalRoomRepository(this._userRepository, {RoomApiClient? apiClient}) : _apiClient = apiClient;
 
   final UserRepository _userRepository;
+
+  /// 실제 서버 연결이 있을 때만 채워진다(`providers.dart`). 있으면 [createRoom] 이 로컬
+  /// 상태는 그대로 유지하면서 "곁다리로" 진짜 방도 하나 만들어본다 — 영상이 서버가 아는
+  /// 출처(유튜브/인스타/틱톡)일 때만. 실패하면 그대로 예외를 던진다(조용히 무시하지 않는다).
+  final RoomApiClient? _apiClient;
 
   // 실제 영상 데이터가 없어 예시 URL을 돌려 쓴다 — 서버가 붙으면 각자 실제 주소를 준다.
   // 인스타그램·틱톡은 인앱 브라우저로 여는 방식이 유튜브 외 출처에서도 되는지 보는 테스트용.
@@ -123,9 +129,10 @@ class LocalRoomRepository implements RoomRepository {
       videoUrl: _youtubeSampleUrl,
       totalCount: 4,
       commentCount: 3,
+      likeCount: 12,
       submissions: [
-        Submission(id: 1, nickname: '민지', videoUrl: _youtubeSampleUrl, commentCount: 2),
-        Submission(id: 2, nickname: '서준', videoUrl: _youtubeSampleUrl, commentCount: 1),
+        Submission(id: 1, nickname: '민지', videoUrl: _youtubeSampleUrl, commentCount: 2, likeCount: 5),
+        Submission(id: 2, nickname: '서준', videoUrl: _youtubeSampleUrl, commentCount: 1, likeCount: 2, isLikedByMe: true),
       ],
     ),
     2: const ChallengeDetail(
@@ -134,7 +141,8 @@ class LocalRoomRepository implements RoomRepository {
       source: 'TikTok',
       videoUrl: _tiktokSampleUrl,
       totalCount: 4,
-      submissions: [Submission(id: 3, nickname: '하늘', videoUrl: _tiktokSampleUrl, commentCount: 0)],
+      likeCount: 4,
+      submissions: [Submission(id: 3, nickname: '하늘', videoUrl: _tiktokSampleUrl, commentCount: 0, likeCount: 1)],
     ),
     3: const ChallengeDetail(
       id: 3,
@@ -149,7 +157,10 @@ class LocalRoomRepository implements RoomRepository {
       source: 'YouTube Shorts',
       videoUrl: _youtubeSampleUrl,
       totalCount: 2,
-      submissions: [Submission(id: 4, nickname: '지수', videoUrl: _youtubeSampleUrl, commentCount: 3)],
+      likeCount: 7,
+      submissions: [
+        Submission(id: 4, nickname: '지수', videoUrl: _youtubeSampleUrl, commentCount: 3, likeCount: 3),
+      ],
     ),
     5: const ChallengeDetail(
       id: 5,
@@ -172,6 +183,18 @@ class LocalRoomRepository implements RoomRepository {
   final _inviteCodes = <String, int>{};
   final _random = Random();
 
+  /// 참가 신청을 보내놓고 아직 방장 수락 전인 방 id. 멤버가 되면([joinRoomByCode] 등) 이
+  /// 목록에서 의미가 없어지지만, 굳이 지우지 않아도 [_withApplied] 가 `_myRoomIds` 를 먼저
+  /// 확인해 `isApplied` 를 `false` 로 돌려준다.
+  final _appliedRoomIds = <int>{};
+
+  /// 남이 내 방에 신청해놓고 아직 내가 수락/거절하지 않은 목록 — 방 id -> 신청자들.
+  /// 1번 방(내가 방장)에 데모용으로 두 명 미리 심어뒀다.
+  final _pendingApplicants = <int, List<ParticipantInfo>>{
+    // 수락/거절이 이 리스트를 직접 지운다(`removeWhere`) — `const` 로 두면 그때 터진다.
+    1: [const ParticipantInfo(nickname: '유진'), const ParticipantInfo(nickname: '태호')],
+  };
+
   var _nextRoomId = 4;
   var _nextChallengeId = 6;
 
@@ -191,12 +214,45 @@ class LocalRoomRepository implements RoomRepository {
 
   @override
   Future<List<Room>> fetchRooms({RoomCategory? category}) async {
-    if (category == null) return List.unmodifiable(_rooms);
-    return _rooms.where((room) => room.category == category).toList();
+    // 실서버가 붙어 있으면 홈 목록은 통째로 실제 공개방으로 바꾼다 — 서버엔 카테고리
+    // 개념이 없어 필터는 무시된다(칩을 눌러도 같은 결과). 로컬 데모/생성 방은 "내 방"
+    // 탭([fetchMyRooms])에서만 보인다.
+    final apiClient = _apiClient;
+    if (apiClient != null) {
+      final rooms = await apiClient.fetchPublicRooms();
+      return rooms.map(_withApplied).toList();
+    }
+
+    final list = category == null ? _rooms : _rooms.where((room) => room.category == category);
+    return list.map(_withApplied).toList();
   }
 
   @override
-  Future<List<Room>> fetchMyRooms() async => _rooms.where((room) => _myRoomIds.contains(room.id)).toList();
+  Future<List<Room>> fetchMyRooms() async {
+    // 이미 멤버인 방 + 아직 수락 전이라 신청만 해둔 방 — 둘 다 "내 방"에 같이 보인다.
+    final joined = _rooms.where((room) => _myRoomIds.contains(room.id));
+    final appliedOnly = _rooms.where((room) => _appliedRoomIds.contains(room.id) && !_myRoomIds.contains(room.id));
+    return [...joined, ...appliedOnly].map(_withApplied).toList();
+  }
+
+  Room _withApplied(Room room) {
+    final isMember = _myRoomIds.contains(room.id);
+    return room.copyWith(isMember: isMember, isApplied: _appliedRoomIds.contains(room.id) && !isMember);
+  }
+
+  @override
+  Future<void> applyToRoom(int roomId) async {
+    if (!_rooms.any((r) => r.id == roomId)) {
+      throw const ApiException(statusCode: 404, code: 'ROOM_NOT_FOUND', message: '방을 찾을 수 없어요.');
+    }
+    if (_myRoomIds.contains(roomId)) return; // 이미 멤버면 신청할 필요가 없다.
+    _appliedRoomIds.add(roomId);
+  }
+
+  @override
+  Future<void> cancelApplication(int roomId) async {
+    _appliedRoomIds.remove(roomId);
+  }
 
   @override
   Future<RoomDetail> fetchRoomDetail(int roomId) async {
@@ -206,11 +262,15 @@ class LocalRoomRepository implements RoomRepository {
     }
     if (!_ownedRoomIds.contains(roomId)) return detail;
 
+    // 방장인 방이면 신청 대기 목록도 같이 채운다 — 남이 보는 화면에는 필요 없으니 위에서
+    // 걸러진다.
+    final pending = _pendingApplicants[roomId] ?? const [];
+
     // 방장인 방이면 "나"를 방장으로 표시한다. 직접 만든 방(`createRoom`)은 이미 멤버
     // 목록에 내가 들어있지만, 데모로 미리 방장을 심어둔 1번 방은 시드 데이터라 여기서 채운다
     // — 실제 서버라면 멤버 목록에 애초에 내가 포함돼 있을 값들이다.
     final myNickname = (await _userRepository.fetchMe()).nickname;
-    if (myNickname == null) return detail.copyWith(isOwnedByMe: true);
+    if (myNickname == null) return detail.copyWith(isOwnedByMe: true, pendingApplicants: pending);
 
     final myIndex = detail.members.indexWhere((m) => m.nickname == myNickname);
     if (myIndex == -1) {
@@ -218,13 +278,59 @@ class LocalRoomRepository implements RoomRepository {
         isOwnedByMe: true,
         members: [ParticipantInfo(nickname: myNickname, isOwner: true), ...detail.members],
         memberCount: detail.memberCount + 1,
+        pendingApplicants: pending,
       );
     }
 
     // 이미 목록에 있는 내 자리를 방장으로 표시한다(새로 추가하지 않는다 — 인원수가 그대로여야 한다).
     final members = [...detail.members];
     members[myIndex] = members[myIndex].copyWith(isOwner: true);
-    return detail.copyWith(isOwnedByMe: true, members: members);
+    return detail.copyWith(isOwnedByMe: true, members: members, pendingApplicants: pending);
+  }
+
+  @override
+  Future<RoomDetail> acceptApplicant(int roomId, String nickname) async {
+    _requireOwner(roomId, action: '신청을 수락');
+    final detail = _roomDetails[roomId];
+    if (detail == null) {
+      throw const ApiException(statusCode: 404, code: 'ROOM_NOT_FOUND', message: '방을 찾을 수 없어요.');
+    }
+
+    final pending = _pendingApplicants[roomId];
+    final applicant = pending?.where((a) => a.nickname == nickname).firstOrNull;
+    if (pending == null || applicant == null) {
+      throw const ApiException(statusCode: 404, code: 'APPLICANT_NOT_FOUND', message: '신청자를 찾을 수 없어요.');
+    }
+
+    pending.removeWhere((a) => a.nickname == nickname);
+    _roomDetails[roomId] = detail.copyWith(
+      members: [...detail.members, applicant],
+      memberCount: detail.memberCount + 1,
+    );
+
+    final roomIndex = _rooms.indexWhere((r) => r.id == roomId);
+    if (roomIndex != -1) {
+      _rooms[roomIndex] = _rooms[roomIndex].copyWith(participantCount: _rooms[roomIndex].participantCount + 1);
+    }
+
+    return fetchRoomDetail(roomId);
+  }
+
+  @override
+  Future<RoomDetail> rejectApplicant(int roomId, String nickname) async {
+    _requireOwner(roomId, action: '신청을 거절');
+    if (!_roomDetails.containsKey(roomId)) {
+      throw const ApiException(statusCode: 404, code: 'ROOM_NOT_FOUND', message: '방을 찾을 수 없어요.');
+    }
+
+    _pendingApplicants[roomId]?.removeWhere((a) => a.nickname == nickname);
+    return fetchRoomDetail(roomId);
+  }
+
+  void _requireOwner(int roomId, {required String action}) {
+    if (!_ownedRoomIds.contains(roomId)) {
+      throw ApiException(statusCode: 403, code: 'NOT_ROOM_OWNER', message: '방장만 $action할 수 있어요.');
+    }
   }
 
   @override
@@ -237,10 +343,70 @@ class LocalRoomRepository implements RoomRepository {
   }
 
   @override
+  Future<ChallengeDetail> toggleChallengeLike(int challengeId) async {
+    final detail = await fetchChallengeDetail(challengeId);
+    final liked = !detail.isLikedByMe;
+    final updated = detail.copyWith(isLikedByMe: liked, likeCount: detail.likeCount + (liked ? 1 : -1));
+    _challengeDetails[challengeId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<ChallengeDetail> toggleSubmissionLike(int challengeId, int submissionId) async {
+    final detail = await fetchChallengeDetail(challengeId);
+    final index = detail.submissions.indexWhere((s) => s.id == submissionId);
+    if (index == -1) {
+      throw const ApiException(statusCode: 404, code: 'SUBMISSION_NOT_FOUND', message: '제출 영상을 찾을 수 없어요.');
+    }
+
+    final submission = detail.submissions[index];
+    final liked = !submission.isLikedByMe;
+    final submissions = [...detail.submissions];
+    submissions[index] = submission.copyWith(isLikedByMe: liked, likeCount: submission.likeCount + (liked ? 1 : -1));
+
+    final updated = detail.copyWith(submissions: submissions);
+    _challengeDetails[challengeId] = updated;
+    return updated;
+  }
+
+  @override
   Future<Room> createRoom(RoomCreateReq req) async {
-    final roomId = _nextRoomId++;
     final pickVideo = req.pickVideoId == null ? null : _picks.where((p) => p.id == req.pickVideoId).firstOrNull;
     final myNickname = (await _userRepository.fetchMe()).nickname ?? '나';
+
+    // 챌린지 영상은 셋 중 하나 — 이미 있는 PICK, 화면에서 직접 붙여넣은 링크, 직접 업로드한 파일.
+    final videoUrl = pickVideo?.videoUrl ?? req.videoUrl;
+    final assetPath = pickVideo?.assetPath ?? req.assetPath;
+    final hasVideo = pickVideo != null || videoUrl != null || assetPath != null;
+    final source = pickVideo?.source ?? (assetPath != null ? '직접 업로드' : '링크');
+
+    // 서버가 아는 출처(유튜브/인스타/틱톡)의 링크일 때만 실제 방도 만들어본다 — 직접 업로드한
+    // 파일은 서버에 올릴 방법이 아직 없어(프로필 사진과 같은 사정) 건너뛴다.
+    // 성공하면 로컬 방 id 로 서버가 매긴 id 를 그대로 쓴다 — 그래야 "홈"의 실서버 목록에서
+    // 이 방을 다시 봤을 때도 같은 id 로 상세를 찾을 수 있다(방 만들기 직후엔 로컬 상세를,
+    // 나중엔 실서버 목록 카드를 거쳐도 같은 방으로 이어진다).
+    String? inviteCode;
+    int roomId;
+    final apiClient = _apiClient;
+    RoomApiCreateResult? apiResult;
+    if (apiClient != null && videoUrl != null) {
+      final videoSource = RoomApiClient.resolveVideoSource(videoUrl);
+      if (videoSource != null) {
+        apiResult = await apiClient.createRoom(
+          name: req.title,
+          description: req.description,
+          isPublic: req.isPublic,
+          videoUrl: videoUrl,
+          videoSource: videoSource,
+        );
+      }
+    }
+    if (apiResult != null) {
+      roomId = apiResult.id;
+      inviteCode = apiResult.inviteCode;
+    } else {
+      roomId = _nextRoomId++; // 로컬 전용 — 서버 id 가 없으니 로컬 시퀀스를 쓴다.
+    }
 
     final room = Room(
       id: roomId,
@@ -248,29 +414,48 @@ class LocalRoomRepository implements RoomRepository {
       hashtags: req.hashtags,
       participantCount: 1,
       status: RoomStatus.open,
+      // 서버가 방금 만들면서 바로 채워준 썸네일이 있으면 쓴다(유튜브·틱톡은 즉시 채워지고,
+      // 인스타그램은 서버에 oEmbed 연동이 없어 여기서도 계속 `null` 이다).
+      thumbnailUrl: apiResult?.thumbnailUrl,
     );
     _rooms.add(room);
     _myRoomIds.add(roomId);
     _ownedRoomIds.add(roomId); // 방을 만든 사람이 방장이다.
 
+    var challenges = const <RoomChallenge>[];
+    if (hasVideo) {
+      final challengeId = _nextChallengeId++;
+      challenges = [
+        RoomChallenge(
+          id: challengeId,
+          title: req.title,
+          source: source,
+          submittedCount: 0,
+          totalCount: 1,
+          thumbnailUrl: apiResult?.thumbnailUrl,
+        ),
+      ];
+      // 목록 카드([RoomChallenge])만 만들고 상세를 안 채우면 탭했을 때 404 가 난다 — 같이 채운다.
+      _challengeDetails[challengeId] = ChallengeDetail(
+        id: challengeId,
+        title: req.title,
+        source: source,
+        videoUrl: videoUrl,
+        assetPath: assetPath,
+        totalCount: 1,
+      );
+    }
+
     _roomDetails[roomId] = RoomDetail(
       id: roomId,
       title: req.title,
+      description: req.description,
       hashtags: req.hashtags,
       isPublic: req.isPublic,
       members: [ParticipantInfo(nickname: myNickname, isOwner: true)],
       memberCount: 1,
-      challenges: pickVideo == null
-          ? const []
-          : [
-              RoomChallenge(
-                id: _nextChallengeId++,
-                title: pickVideo.title,
-                source: pickVideo.source,
-                submittedCount: 0,
-                totalCount: 1,
-              ),
-            ],
+      challenges: challenges,
+      inviteCode: inviteCode,
     );
 
     return room;
@@ -304,7 +489,12 @@ class LocalRoomRepository implements RoomRepository {
       throw const ApiException(statusCode: 403, code: 'NOT_ROOM_OWNER', message: '방장만 방 정보를 수정할 수 있어요.');
     }
 
-    _roomDetails[roomId] = detail.copyWith(title: req.title, hashtags: req.hashtags, isPublic: req.isPublic);
+    _roomDetails[roomId] = detail.copyWith(
+      title: req.title,
+      description: req.description,
+      hashtags: req.hashtags,
+      isPublic: req.isPublic,
+    );
 
     // 홈/내 방 목록의 카드([Room])도 같은 제목·해시태그를 보여주니 같이 맞춘다.
     final roomIndex = _rooms.indexWhere((r) => r.id == roomId);

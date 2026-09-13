@@ -21,21 +21,37 @@ abstract class Room with _$Room {
     /// 어느 칩에도 안 묶이는 방일 수 있다 — 그러면 "전체"에서만 보인다.
     RoomCategory? category,
     String? thumbnailUrl,
+
+    /// 로그인한 유저가 이 방에 참가 신청을 보내놓고 아직 방장 수락 전인 상태면 `true`.
+    /// 이미 멤버인 방은 항상 `false` — "내 방" 목록에서 신청 중인 방과 이미 들어간 방을
+    /// 구분하고, "신청"/"신청취소" 배지 중 뭘 보여줄지를 가른다.
+    @Default(false) bool isApplied,
+
+    /// 로그인한 유저가 이미 이 방의 멤버면 `true`. 홈 목록에서 이미 들어간 방에는
+    /// [RoomStatus.open] 이어도 "신청" 배지를 보여주지 않으려고 둔다 — 신청해봐야
+    /// 아무 일도 안 일어나 헷갈리기만 한다.
+    @Default(false) bool isMember,
   }) = _Room;
 
   factory Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
 }
 
 /// 방 만들기 화면에서 서버로 보내는 값.
+///
+/// 챌린지 영상은 셋 중 하나 — 전부 `null` 이면 영상 없이 방만 만든다:
+/// - [pickVideoId] : "이번 주 챌룸 PICK" 에서 골라 시작한 경우 그 영상 id.
+/// - [videoUrl] : 화면에서 직접 붙여넣은 링크(유튜브·인스타·틱톡 등).
+/// - [assetPath] : 화면에서 직접 업로드한(기기에서 고른) 영상 파일 경로.
 @freezed
 abstract class RoomCreateReq with _$RoomCreateReq {
   const factory RoomCreateReq({
     required String title,
+    String? description,
     @Default(<String>[]) List<String> hashtags,
     @Default(true) bool isPublic,
-
-    /// "이번 주 챌룸 PICK" 에서 골라 시작한 경우 그 영상 id — 직접 만들면 `null`.
     int? pickVideoId,
+    String? videoUrl,
+    String? assetPath,
   }) = _RoomCreateReq;
 
   factory RoomCreateReq.fromJson(Map<String, dynamic> json) => _$RoomCreateReqFromJson(json);
@@ -47,6 +63,7 @@ abstract class RoomCreateReq with _$RoomCreateReq {
 abstract class RoomUpdateReq with _$RoomUpdateReq {
   const factory RoomUpdateReq({
     required String title,
+    String? description,
     @Default(<String>[]) List<String> hashtags,
     @Default(true) bool isPublic,
   }) = _RoomUpdateReq;
@@ -73,6 +90,7 @@ abstract class RoomDetail with _$RoomDetail {
   const factory RoomDetail({
     required int id,
     required String title,
+    String? description,
     @Default(<String>[]) List<String> hashtags,
     @Default(true) bool isPublic,
     @Default(<ParticipantInfo>[]) List<ParticipantInfo> members,
@@ -84,6 +102,11 @@ abstract class RoomDetail with _$RoomDetail {
 
     /// 방장이 발급한 초대 코드 — 아직 안 만들었으면 `null`. [RoomInviteScreen] 이 보여준다.
     String? inviteCode,
+
+    /// 이 방에 참가 신청을 보내놓고 아직 방장 수락/거절 전인 사람들 — [isOwnedByMe] 일 때만
+    /// 채워진다(내가 방장이 아니면 남의 신청 목록을 볼 이유가 없다). 멤버 화면 맨 위에
+    /// "신청 대기 중" 으로 보여주고, 방장이 수락하면 [members] 로, 거절하면 그냥 사라진다.
+    @Default(<ParticipantInfo>[]) List<ParticipantInfo> pendingApplicants,
   }) = _RoomDetail;
 
   factory RoomDetail.fromJson(Map<String, dynamic> json) => _$RoomDetailFromJson(json);
@@ -125,6 +148,10 @@ abstract class ChallengeDetail with _$ChallengeDetail {
 
     /// 원본 영상에 달린 댓글 수. 제출 영상 각각의 댓글 수는 [Submission.commentCount] 를 본다.
     @Default(0) int commentCount,
+
+    /// 원본 영상 좋아요 수. 제출 영상 각각의 좋아요는 [Submission.likeCount] 를 본다.
+    @Default(0) int likeCount,
+    @Default(false) bool isLikedByMe,
   }) = _ChallengeDetail;
 
   factory ChallengeDetail.fromJson(Map<String, dynamic> json) => _$ChallengeDetailFromJson(json);

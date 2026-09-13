@@ -143,12 +143,16 @@ final class LocalDevBackendProvider
 
 String _$localDevBackendHash() => r'6cef318177f8bbccf1e5a8d711268b183552c8dc';
 
-/// 소셜 SDK 를 붙이면 `UnavailableSocialAuthService` 자리를 새 구현으로 바꾼다.
+/// 지금은 네이버만 실제 SDK 로 붙어 있다 — [HybridSocialAuthService] 가 provider 별로
+/// 그 하나만 진짜로 보내고 나머지는 기존 방식(로컬 모드는 가짜 토큰, 실서버 모드는
+/// "아직 연결 전" 에러)으로 넘긴다.
 
 @ProviderFor(socialAuthService)
 final socialAuthServiceProvider = SocialAuthServiceProvider._();
 
-/// 소셜 SDK 를 붙이면 `UnavailableSocialAuthService` 자리를 새 구현으로 바꾼다.
+/// 지금은 네이버만 실제 SDK 로 붙어 있다 — [HybridSocialAuthService] 가 provider 별로
+/// 그 하나만 진짜로 보내고 나머지는 기존 방식(로컬 모드는 가짜 토큰, 실서버 모드는
+/// "아직 연결 전" 에러)으로 넘긴다.
 
 final class SocialAuthServiceProvider
     extends
@@ -158,7 +162,9 @@ final class SocialAuthServiceProvider
           SocialAuthService
         >
     with $Provider<SocialAuthService> {
-  /// 소셜 SDK 를 붙이면 `UnavailableSocialAuthService` 자리를 새 구현으로 바꾼다.
+  /// 지금은 네이버만 실제 SDK 로 붙어 있다 — [HybridSocialAuthService] 가 provider 별로
+  /// 그 하나만 진짜로 보내고 나머지는 기존 방식(로컬 모드는 가짜 토큰, 실서버 모드는
+  /// "아직 연결 전" 에러)으로 넘긴다.
   SocialAuthServiceProvider._()
     : super(
         from: null,
@@ -193,14 +199,22 @@ final class SocialAuthServiceProvider
   }
 }
 
-String _$socialAuthServiceHash() => r'4fc38addd5e1200173b4f5a4c5eb3a3f13a528cf';
+String _$socialAuthServiceHash() => r'7c8edb622ba76350b5b5407c79b982e24b3ac659';
+
+/// 로그인은 실제 서버(`challroom_api`)의 `/v1/auth` 라우터가 이미 구현돼 있어서, 다른
+/// 도메인과 달리 `apiBaseUrl` 이 있으면 바로 Dio 로 갈아탄다.
 
 @ProviderFor(authRepository)
 final authRepositoryProvider = AuthRepositoryProvider._();
 
+/// 로그인은 실제 서버(`challroom_api`)의 `/v1/auth` 라우터가 이미 구현돼 있어서, 다른
+/// 도메인과 달리 `apiBaseUrl` 이 있으면 바로 Dio 로 갈아탄다.
+
 final class AuthRepositoryProvider
     extends $FunctionalProvider<AuthRepository, AuthRepository, AuthRepository>
     with $Provider<AuthRepository> {
+  /// 로그인은 실제 서버(`challroom_api`)의 `/v1/auth` 라우터가 이미 구현돼 있어서, 다른
+  /// 도메인과 달리 `apiBaseUrl` 이 있으면 바로 Dio 로 갈아탄다.
   AuthRepositoryProvider._()
     : super(
         from: null,
@@ -234,7 +248,7 @@ final class AuthRepositoryProvider
   }
 }
 
-String _$authRepositoryHash() => r'e985e586604016a1386d301f2d82707b74ecb325';
+String _$authRepositoryHash() => r'4216d19b04d072ba70259eced034b351fc29be09';
 
 @ProviderFor(userRepository)
 final userRepositoryProvider = UserRepositoryProvider._();
@@ -324,7 +338,7 @@ final class RoomRepositoryProvider
   }
 }
 
-String _$roomRepositoryHash() => r'75a894f59f325e60dfc10ba6a04a930a5b272a76';
+String _$roomRepositoryHash() => r'd96b1a07903efce682b53d56c5433410939e463c';
 
 /// 방 목록과 마찬가지로 작성한 댓글이 화면을 옮겨도 남아있어야 해서 `keepAlive` 다.
 
@@ -376,7 +390,7 @@ final class CommentRepositoryProvider
   }
 }
 
-String _$commentRepositoryHash() => r'b0a94d5059942afaea5fc73861beaa547a2c6e62';
+String _$commentRepositoryHash() => r'e475b42184d42491d116b5ff197b78e72273f72d';
 
 @ProviderFor(noticeRepository)
 final noticeRepositoryProvider = NoticeRepositoryProvider._();
@@ -422,7 +436,7 @@ final class NoticeRepositoryProvider
   }
 }
 
-String _$noticeRepositoryHash() => r'1f5bf248eb75e2b3d98bc7d2f1202de8eaf9e183';
+String _$noticeRepositoryHash() => r'9ec355dd039a4daa8c53de45f28473f78032c4be';
 
 @ProviderFor(faqRepository)
 final faqRepositoryProvider = FaqRepositoryProvider._();
@@ -463,4 +477,106 @@ final class FaqRepositoryProvider
   }
 }
 
-String _$faqRepositoryHash() => r'a348edb1882bf46e431a2023f5355197d72dfc23';
+String _$faqRepositoryHash() => r'8d6e34b98b4748e90ef5b29fcf882b69f27dc858';
+
+/// 신청 수락처럼 이 세션 안에서 실제로 생긴 알림을 쌓아둬야 해서 `keepAlive` 다 — 방/댓글
+/// 저장소와 같은 이유.
+
+@ProviderFor(notificationRepository)
+final notificationRepositoryProvider = NotificationRepositoryProvider._();
+
+/// 신청 수락처럼 이 세션 안에서 실제로 생긴 알림을 쌓아둬야 해서 `keepAlive` 다 — 방/댓글
+/// 저장소와 같은 이유.
+
+final class NotificationRepositoryProvider
+    extends
+        $FunctionalProvider<
+          NotificationRepository,
+          NotificationRepository,
+          NotificationRepository
+        >
+    with $Provider<NotificationRepository> {
+  /// 신청 수락처럼 이 세션 안에서 실제로 생긴 알림을 쌓아둬야 해서 `keepAlive` 다 — 방/댓글
+  /// 저장소와 같은 이유.
+  NotificationRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'notificationRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$notificationRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<NotificationRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  NotificationRepository create(Ref ref) {
+    return notificationRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NotificationRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NotificationRepository>(value),
+    );
+  }
+}
+
+String _$notificationRepositoryHash() =>
+    r'1edb487f05aaa80eb52c5806b52200e89f9cb343';
+
+@ProviderFor(reportRepository)
+final reportRepositoryProvider = ReportRepositoryProvider._();
+
+final class ReportRepositoryProvider
+    extends
+        $FunctionalProvider<
+          ReportRepository,
+          ReportRepository,
+          ReportRepository
+        >
+    with $Provider<ReportRepository> {
+  ReportRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'reportRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$reportRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<ReportRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ReportRepository create(Ref ref) {
+    return reportRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ReportRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ReportRepository>(value),
+    );
+  }
+}
+
+String _$reportRepositoryHash() => r'1a88637457e7b3879f1cd0e9f777b93f3da22e4f';

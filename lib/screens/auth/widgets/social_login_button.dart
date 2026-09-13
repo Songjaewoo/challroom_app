@@ -35,7 +35,7 @@ class SocialLoginButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(13),
             side: style.border == null ? BorderSide.none : BorderSide(color: style.border!),
           ),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

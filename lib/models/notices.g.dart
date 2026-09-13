@@ -10,14 +10,14 @@ _Notice _$NoticeFromJson(Map<String, dynamic> json) => _Notice(
   id: (json['id'] as num).toInt(),
   title: json['title'] as String,
   content: json['content'] as String,
-  createdAt: DateTime.parse(json['created_at'] as String),
-  isPinned: json['is_pinned'] as bool? ?? false,
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  isPinned: json['isPinned'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$NoticeToJson(_Notice instance) => <String, dynamic>{
   'id': instance.id,
   'title': instance.title,
   'content': instance.content,
-  'created_at': instance.createdAt.toIso8601String(),
-  'is_pinned': instance.isPinned,
+  'createdAt': instance.createdAt.toIso8601String(),
+  'isPinned': instance.isPinned,
 };

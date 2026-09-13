@@ -13,6 +13,10 @@ abstract class Submission with _$Submission {
     String? assetPath,
     String? thumbnailUrl,
     @Default(0) int commentCount,
+    @Default(0) int likeCount,
+
+    /// 로그인한 유저가 이 영상에 좋아요를 눌러놨으면 `true` — 하트를 채워서 보여준다.
+    @Default(false) bool isLikedByMe,
   }) = _Submission;
 
   factory Submission.fromJson(Map<String, dynamic> json) => _$SubmissionFromJson(json);

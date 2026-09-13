@@ -32,7 +32,8 @@ const apiBaseUrl = String.fromEnvironment('API_BASE_URL');
 Dio createDio(TokenStorage tokenStorage) {
   final dio = ApiDio(
     BaseOptions(
-      baseUrl: apiBaseUrl,
+      // 서버 라우트가 전부 `/v1` 아래에 있다 — 호출부는 매번 안 붙이고 여기서 한 번에 더한다.
+      baseUrl: apiBaseUrl.isEmpty ? '' : '$apiBaseUrl/v1',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       contentType: Headers.jsonContentType,

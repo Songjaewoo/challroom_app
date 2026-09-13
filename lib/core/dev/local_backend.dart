@@ -60,10 +60,7 @@ class LocalAuthRepository implements AuthRepository {
   @override
   Future<AuthResult> signIn(SocialProvider provider, SocialLoginReq req) async {
     final user = await _backend.signIn(provider);
-    return AuthResult(
-      user: user,
-      tokens: const AuthTokens(accessToken: 'local-dev-token'),
-    );
+    return AuthResult(user: user, accessToken: 'local-dev-token', refreshToken: 'local-dev-refresh-token');
   }
 
   @override

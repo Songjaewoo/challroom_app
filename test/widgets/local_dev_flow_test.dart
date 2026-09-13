@@ -1,3 +1,4 @@
+import 'package:challroom_app/core/dev/local_backend.dart';
 import 'package:challroom_app/core/storage/token_storage.dart';
 import 'package:challroom_app/main.dart';
 import 'package:challroom_app/providers.dart';
@@ -9,9 +10,11 @@ import 'package:mocktail/mocktail.dart';
 class _TokenStorage extends Mock implements TokenStorage {}
 
 /// `API_BASE_URL` 없이(지금 기본값) 로그인 → 프로필 설정 → 홈까지 실제 라우팅으로
-/// 이어지는지 본다. `socialAuthServiceProvider` / `authRepositoryProvider` /
-/// `userRepositoryProvider` 를 하나도 오버라이드하지 않는다 — providers.dart 가
-/// `apiBaseUrl.isEmpty` 일 때 고르는 로컬 목업 경로가 바로 이 테스트의 대상이다.
+/// 이어지는지 본다. `authRepositoryProvider` / `userRepositoryProvider` 는 오버라이드하지
+/// 않는다 — providers.dart 가 `apiBaseUrl.isEmpty` 일 때 고르는 로컬 목업 경로가 바로 이
+/// 테스트의 대상이다. `socialAuthServiceProvider` 만은 예외로 [LocalSocialAuthService] 로
+/// 고정한다 — 카카오·네이버는 [HybridSocialAuthService] 가 `apiBaseUrl` 과 무관하게 항상
+/// 실제 네이티브 SDK 로 보내는데, 위젯 테스트엔 그 플랫폼 채널이 없어 탭하자마자 멈춘다.
 /// 실기기에서 secure storage 는 되지만 위젯 테스트 환경엔 없어서 저장소만 목으로 바꾼다.
 void main() {
   testWidgets('로그인 버튼을 누르면 프로필 설정 화면으로, 완료하면 홈으로 간다', (tester) async {
@@ -31,7 +34,13 @@ void main() {
     });
 
     await tester.pumpWidget(
-      ProviderScope(overrides: [tokenStorageProvider.overrideWithValue(storage)], child: const App()),
+      ProviderScope(
+        overrides: [
+          tokenStorageProvider.overrideWithValue(storage),
+          socialAuthServiceProvider.overrideWithValue(const LocalSocialAuthService()),
+        ],
+        child: const App(),
+      ),
     );
     await tester.pumpAndSettle();
 

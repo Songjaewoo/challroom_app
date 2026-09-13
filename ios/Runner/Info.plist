@@ -4,6 +4,57 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- 네이버 로그인(flutter_naver_login) / 카카오 로그인(kakao_flutter_sdk_user) / 구글
+	     로그인(google_sign_in) — 각자 콜백을 받을 커스텀 URL 스킴. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>naver-20ss5hkKvMY6mTujNqIU</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kakao8813953927571385b7c30e936fbdec01</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- 구글 클라이언트 ID를 거꾸로 뒤집은 값(REVERSED_CLIENT_ID) — 구글 쪽 관례. -->
+				<string>com.googleusercontent.apps.603788464132-d7fdoeg75a5ih3nu4ipgk0okd10jie5s</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>naversearchapp</string>
+		<string>naversearchthirdlogin</string>
+		<string>kakaokompassauth</string>
+	</array>
+	<key>NidUrlScheme</key>
+	<string>naver-20ss5hkKvMY6mTujNqIU</string>
+	<key>NidClientID</key>
+	<string>20ss5hkKvMY6mTujNqIU</string>
+	<key>NidClientSecret</key>
+	<string>NtocbuCkqD</string>
+	<key>NidAppName</key>
+	<string>챌룸</string>
+	<!-- 로컬 개발 서버(HTTP, 사설 IP)로 API 를 붙이는 동안만 쓰는 예외 — 실제 배포판은
+	     HTTPS 서버 주소로 바뀌면서 이 블록도 지워야 한다. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

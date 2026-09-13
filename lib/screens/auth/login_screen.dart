@@ -57,7 +57,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Text(
                 '계속 진행 시 이용약관 및 개인정보처리방침에 동의합니다',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12, color: AppColors.inkFaint),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 13.5, color: AppColors.inkFaint),
               ),
             ],
           ),

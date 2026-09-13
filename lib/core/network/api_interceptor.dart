@@ -53,7 +53,8 @@ class ApiInterceptor extends Interceptor {
 
     return ApiException(
       statusCode: response.statusCode ?? 0,
-      code: error['code'] as String? ?? 'UNKNOWN',
+      // 서버의 에러 응답(`ErrorResponse`)은 코드를 `error` 필드에 담아 보낸다(`code` 가 아니다).
+      code: error['error'] as String? ?? 'UNKNOWN',
       message: error['message'] as String? ?? _defaultMessage(response.statusCode),
     );
   }

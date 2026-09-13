@@ -6,14 +6,20 @@ part of 'paged.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_Paged<T> _$PagedFromJson<T>(Map<String, dynamic> json, T Function(Object? json) fromJsonT) => _Paged<T>(
+_Paged<T> _$PagedFromJson<T>(
+  Map<String, dynamic> json,
+  T Function(Object? json) fromJsonT,
+) => _Paged<T>(
   items: (json['items'] as List<dynamic>).map(fromJsonT).toList(),
   total: (json['total'] as num).toInt(),
-  totalPages: (json['total_pages'] as num).toInt(),
+  totalPages: (json['totalPages'] as num).toInt(),
 );
 
-Map<String, dynamic> _$PagedToJson<T>(_Paged<T> instance, Object? Function(T value) toJsonT) => <String, dynamic>{
+Map<String, dynamic> _$PagedToJson<T>(
+  _Paged<T> instance,
+  Object? Function(T value) toJsonT,
+) => <String, dynamic>{
   'items': instance.items.map(toJsonT).toList(),
   'total': instance.total,
-  'total_pages': instance.totalPages,
+  'totalPages': instance.totalPages,
 };

@@ -17,7 +17,13 @@ mixin _$Room {
 
  int get id; String get title; List<String> get hashtags;/// 목록 카드에 겹쳐 보여줄 몇 명 — 전체 참여자가 아니다. 인원수는 [participantCount] 를 본다.
  List<ParticipantInfo> get participants; int get participantCount; RoomStatus get status;/// 어느 칩에도 안 묶이는 방일 수 있다 — 그러면 "전체"에서만 보인다.
- RoomCategory? get category; String? get thumbnailUrl;
+ RoomCategory? get category; String? get thumbnailUrl;/// 로그인한 유저가 이 방에 참가 신청을 보내놓고 아직 방장 수락 전인 상태면 `true`.
+/// 이미 멤버인 방은 항상 `false` — "내 방" 목록에서 신청 중인 방과 이미 들어간 방을
+/// 구분하고, "신청"/"신청취소" 배지 중 뭘 보여줄지를 가른다.
+ bool get isApplied;/// 로그인한 유저가 이미 이 방의 멤버면 `true`. 홈 목록에서 이미 들어간 방에는
+/// [RoomStatus.open] 이어도 "신청" 배지를 보여주지 않으려고 둔다 — 신청해봐야
+/// 아무 일도 안 일어나 헷갈리기만 한다.
+ bool get isMember;
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,16 +36,16 @@ $RoomCopyWith<Room> get copyWith => _$RoomCopyWithImpl<Room>(this as Room, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Room&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.hashtags, hashtags)&&const DeepCollectionEquality().equals(other.participants, participants)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount)&&(identical(other.status, status) || other.status == status)&&(identical(other.category, category) || other.category == category)&&(identical(other.thumbnailUrl, thumbnailUrl) || other.thumbnailUrl == thumbnailUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Room&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.hashtags, hashtags)&&const DeepCollectionEquality().equals(other.participants, participants)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount)&&(identical(other.status, status) || other.status == status)&&(identical(other.category, category) || other.category == category)&&(identical(other.thumbnailUrl, thumbnailUrl) || other.thumbnailUrl == thumbnailUrl)&&(identical(other.isApplied, isApplied) || other.isApplied == isApplied)&&(identical(other.isMember, isMember) || other.isMember == isMember));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(hashtags),const DeepCollectionEquality().hash(participants),participantCount,status,category,thumbnailUrl);
+int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(hashtags),const DeepCollectionEquality().hash(participants),participantCount,status,category,thumbnailUrl,isApplied,isMember);
 
 @override
 String toString() {
-  return 'Room(id: $id, title: $title, hashtags: $hashtags, participants: $participants, participantCount: $participantCount, status: $status, category: $category, thumbnailUrl: $thumbnailUrl)';
+  return 'Room(id: $id, title: $title, hashtags: $hashtags, participants: $participants, participantCount: $participantCount, status: $status, category: $category, thumbnailUrl: $thumbnailUrl, isApplied: $isApplied, isMember: $isMember)';
 }
 
 
@@ -50,7 +56,7 @@ abstract mixin class $RoomCopyWith<$Res>  {
   factory $RoomCopyWith(Room value, $Res Function(Room) _then) = _$RoomCopyWithImpl;
 @useResult
 $Res call({
- int id, String title, List<String> hashtags, List<ParticipantInfo> participants, int participantCount, RoomStatus status, RoomCategory? category, String? thumbnailUrl
+ int id, String title, List<String> hashtags, List<ParticipantInfo> participants, int participantCount, RoomStatus status, RoomCategory? category, String? thumbnailUrl, bool isApplied, bool isMember
 });
 
 
@@ -67,7 +73,7 @@ class _$RoomCopyWithImpl<$Res>
 
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? hashtags = null,Object? participants = null,Object? participantCount = null,Object? status = null,Object? category = freezed,Object? thumbnailUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? hashtags = null,Object? participants = null,Object? participantCount = null,Object? status = null,Object? category = freezed,Object? thumbnailUrl = freezed,Object? isApplied = null,Object? isMember = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -77,7 +83,9 @@ as List<ParticipantInfo>,participantCount: null == participantCount ? _self.part
 as int,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as RoomStatus,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as RoomCategory?,thumbnailUrl: freezed == thumbnailUrl ? _self.thumbnailUrl : thumbnailUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,isApplied: null == isApplied ? _self.isApplied : isApplied // ignore: cast_nullable_to_non_nullable
+as bool,isMember: null == isMember ? _self.isMember : isMember // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -162,10 +170,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  List<String> hashtags,  List<ParticipantInfo> participants,  int participantCount,  RoomStatus status,  RoomCategory? category,  String? thumbnailUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  List<String> hashtags,  List<ParticipantInfo> participants,  int participantCount,  RoomStatus status,  RoomCategory? category,  String? thumbnailUrl,  bool isApplied,  bool isMember)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Room() when $default != null:
-return $default(_that.id,_that.title,_that.hashtags,_that.participants,_that.participantCount,_that.status,_that.category,_that.thumbnailUrl);case _:
+return $default(_that.id,_that.title,_that.hashtags,_that.participants,_that.participantCount,_that.status,_that.category,_that.thumbnailUrl,_that.isApplied,_that.isMember);case _:
   return orElse();
 
 }
@@ -183,10 +191,10 @@ return $default(_that.id,_that.title,_that.hashtags,_that.participants,_that.par
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  List<String> hashtags,  List<ParticipantInfo> participants,  int participantCount,  RoomStatus status,  RoomCategory? category,  String? thumbnailUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  List<String> hashtags,  List<ParticipantInfo> participants,  int participantCount,  RoomStatus status,  RoomCategory? category,  String? thumbnailUrl,  bool isApplied,  bool isMember)  $default,) {final _that = this;
 switch (_that) {
 case _Room():
-return $default(_that.id,_that.title,_that.hashtags,_that.participants,_that.participantCount,_that.status,_that.category,_that.thumbnailUrl);case _:
+return $default(_that.id,_that.title,_that.hashtags,_that.participants,_that.participantCount,_that.status,_that.category,_that.thumbnailUrl,_that.isApplied,_that.isMember);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +211,10 @@ return $default(_that.id,_that.title,_that.hashtags,_that.participants,_that.par
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  List<String> hashtags,  List<ParticipantInfo> participants,  int participantCount,  RoomStatus status,  RoomCategory? category,  String? thumbnailUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  List<String> hashtags,  List<ParticipantInfo> participants,  int participantCount,  RoomStatus status,  RoomCategory? category,  String? thumbnailUrl,  bool isApplied,  bool isMember)?  $default,) {final _that = this;
 switch (_that) {
 case _Room() when $default != null:
-return $default(_that.id,_that.title,_that.hashtags,_that.participants,_that.participantCount,_that.status,_that.category,_that.thumbnailUrl);case _:
+return $default(_that.id,_that.title,_that.hashtags,_that.participants,_that.participantCount,_that.status,_that.category,_that.thumbnailUrl,_that.isApplied,_that.isMember);case _:
   return null;
 
 }
@@ -218,7 +226,7 @@ return $default(_that.id,_that.title,_that.hashtags,_that.participants,_that.par
 @JsonSerializable()
 
 class _Room implements Room {
-  const _Room({required this.id, required this.title, final  List<String> hashtags = const <String>[], final  List<ParticipantInfo> participants = const <ParticipantInfo>[], required this.participantCount, required this.status, this.category, this.thumbnailUrl}): _hashtags = hashtags,_participants = participants;
+  const _Room({required this.id, required this.title, final  List<String> hashtags = const <String>[], final  List<ParticipantInfo> participants = const <ParticipantInfo>[], required this.participantCount, required this.status, this.category, this.thumbnailUrl, this.isApplied = false, this.isMember = false}): _hashtags = hashtags,_participants = participants;
   factory _Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
 
 @override final  int id;
@@ -244,6 +252,14 @@ class _Room implements Room {
 /// 어느 칩에도 안 묶이는 방일 수 있다 — 그러면 "전체"에서만 보인다.
 @override final  RoomCategory? category;
 @override final  String? thumbnailUrl;
+/// 로그인한 유저가 이 방에 참가 신청을 보내놓고 아직 방장 수락 전인 상태면 `true`.
+/// 이미 멤버인 방은 항상 `false` — "내 방" 목록에서 신청 중인 방과 이미 들어간 방을
+/// 구분하고, "신청"/"신청취소" 배지 중 뭘 보여줄지를 가른다.
+@override@JsonKey() final  bool isApplied;
+/// 로그인한 유저가 이미 이 방의 멤버면 `true`. 홈 목록에서 이미 들어간 방에는
+/// [RoomStatus.open] 이어도 "신청" 배지를 보여주지 않으려고 둔다 — 신청해봐야
+/// 아무 일도 안 일어나 헷갈리기만 한다.
+@override@JsonKey() final  bool isMember;
 
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
@@ -258,16 +274,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Room&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._hashtags, _hashtags)&&const DeepCollectionEquality().equals(other._participants, _participants)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount)&&(identical(other.status, status) || other.status == status)&&(identical(other.category, category) || other.category == category)&&(identical(other.thumbnailUrl, thumbnailUrl) || other.thumbnailUrl == thumbnailUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Room&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._hashtags, _hashtags)&&const DeepCollectionEquality().equals(other._participants, _participants)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount)&&(identical(other.status, status) || other.status == status)&&(identical(other.category, category) || other.category == category)&&(identical(other.thumbnailUrl, thumbnailUrl) || other.thumbnailUrl == thumbnailUrl)&&(identical(other.isApplied, isApplied) || other.isApplied == isApplied)&&(identical(other.isMember, isMember) || other.isMember == isMember));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(_hashtags),const DeepCollectionEquality().hash(_participants),participantCount,status,category,thumbnailUrl);
+int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(_hashtags),const DeepCollectionEquality().hash(_participants),participantCount,status,category,thumbnailUrl,isApplied,isMember);
 
 @override
 String toString() {
-  return 'Room(id: $id, title: $title, hashtags: $hashtags, participants: $participants, participantCount: $participantCount, status: $status, category: $category, thumbnailUrl: $thumbnailUrl)';
+  return 'Room(id: $id, title: $title, hashtags: $hashtags, participants: $participants, participantCount: $participantCount, status: $status, category: $category, thumbnailUrl: $thumbnailUrl, isApplied: $isApplied, isMember: $isMember)';
 }
 
 
@@ -278,7 +294,7 @@ abstract mixin class _$RoomCopyWith<$Res> implements $RoomCopyWith<$Res> {
   factory _$RoomCopyWith(_Room value, $Res Function(_Room) _then) = __$RoomCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String title, List<String> hashtags, List<ParticipantInfo> participants, int participantCount, RoomStatus status, RoomCategory? category, String? thumbnailUrl
+ int id, String title, List<String> hashtags, List<ParticipantInfo> participants, int participantCount, RoomStatus status, RoomCategory? category, String? thumbnailUrl, bool isApplied, bool isMember
 });
 
 
@@ -295,7 +311,7 @@ class __$RoomCopyWithImpl<$Res>
 
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? hashtags = null,Object? participants = null,Object? participantCount = null,Object? status = null,Object? category = freezed,Object? thumbnailUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? hashtags = null,Object? participants = null,Object? participantCount = null,Object? status = null,Object? category = freezed,Object? thumbnailUrl = freezed,Object? isApplied = null,Object? isMember = null,}) {
   return _then(_Room(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -305,7 +321,9 @@ as List<ParticipantInfo>,participantCount: null == participantCount ? _self.part
 as int,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as RoomStatus,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as RoomCategory?,thumbnailUrl: freezed == thumbnailUrl ? _self.thumbnailUrl : thumbnailUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,isApplied: null == isApplied ? _self.isApplied : isApplied // ignore: cast_nullable_to_non_nullable
+as bool,isMember: null == isMember ? _self.isMember : isMember // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -316,8 +334,7 @@ as String?,
 /// @nodoc
 mixin _$RoomCreateReq {
 
- String get title; List<String> get hashtags; bool get isPublic;/// "이번 주 챌룸 PICK" 에서 골라 시작한 경우 그 영상 id — 직접 만들면 `null`.
- int? get pickVideoId;
+ String get title; String? get description; List<String> get hashtags; bool get isPublic; int? get pickVideoId; String? get videoUrl; String? get assetPath;
 /// Create a copy of RoomCreateReq
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -330,16 +347,16 @@ $RoomCreateReqCopyWith<RoomCreateReq> get copyWith => _$RoomCreateReqCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RoomCreateReq&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.hashtags, hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.pickVideoId, pickVideoId) || other.pickVideoId == pickVideoId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RoomCreateReq&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other.hashtags, hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.pickVideoId, pickVideoId) || other.pickVideoId == pickVideoId)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.assetPath, assetPath) || other.assetPath == assetPath));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,const DeepCollectionEquality().hash(hashtags),isPublic,pickVideoId);
+int get hashCode => Object.hash(runtimeType,title,description,const DeepCollectionEquality().hash(hashtags),isPublic,pickVideoId,videoUrl,assetPath);
 
 @override
 String toString() {
-  return 'RoomCreateReq(title: $title, hashtags: $hashtags, isPublic: $isPublic, pickVideoId: $pickVideoId)';
+  return 'RoomCreateReq(title: $title, description: $description, hashtags: $hashtags, isPublic: $isPublic, pickVideoId: $pickVideoId, videoUrl: $videoUrl, assetPath: $assetPath)';
 }
 
 
@@ -350,7 +367,7 @@ abstract mixin class $RoomCreateReqCopyWith<$Res>  {
   factory $RoomCreateReqCopyWith(RoomCreateReq value, $Res Function(RoomCreateReq) _then) = _$RoomCreateReqCopyWithImpl;
 @useResult
 $Res call({
- String title, List<String> hashtags, bool isPublic, int? pickVideoId
+ String title, String? description, List<String> hashtags, bool isPublic, int? pickVideoId, String? videoUrl, String? assetPath
 });
 
 
@@ -367,13 +384,16 @@ class _$RoomCreateReqCopyWithImpl<$Res>
 
 /// Create a copy of RoomCreateReq
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? hashtags = null,Object? isPublic = null,Object? pickVideoId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? description = freezed,Object? hashtags = null,Object? isPublic = null,Object? pickVideoId = freezed,Object? videoUrl = freezed,Object? assetPath = freezed,}) {
   return _then(_self.copyWith(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,hashtags: null == hashtags ? _self.hashtags : hashtags // ignore: cast_nullable_to_non_nullable
+as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,hashtags: null == hashtags ? _self.hashtags : hashtags // ignore: cast_nullable_to_non_nullable
 as List<String>,isPublic: null == isPublic ? _self.isPublic : isPublic // ignore: cast_nullable_to_non_nullable
 as bool,pickVideoId: freezed == pickVideoId ? _self.pickVideoId : pickVideoId // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,videoUrl: freezed == videoUrl ? _self.videoUrl : videoUrl // ignore: cast_nullable_to_non_nullable
+as String?,assetPath: freezed == assetPath ? _self.assetPath : assetPath // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -458,10 +478,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  List<String> hashtags,  bool isPublic,  int? pickVideoId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String? description,  List<String> hashtags,  bool isPublic,  int? pickVideoId,  String? videoUrl,  String? assetPath)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RoomCreateReq() when $default != null:
-return $default(_that.title,_that.hashtags,_that.isPublic,_that.pickVideoId);case _:
+return $default(_that.title,_that.description,_that.hashtags,_that.isPublic,_that.pickVideoId,_that.videoUrl,_that.assetPath);case _:
   return orElse();
 
 }
@@ -479,10 +499,10 @@ return $default(_that.title,_that.hashtags,_that.isPublic,_that.pickVideoId);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  List<String> hashtags,  bool isPublic,  int? pickVideoId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String? description,  List<String> hashtags,  bool isPublic,  int? pickVideoId,  String? videoUrl,  String? assetPath)  $default,) {final _that = this;
 switch (_that) {
 case _RoomCreateReq():
-return $default(_that.title,_that.hashtags,_that.isPublic,_that.pickVideoId);case _:
+return $default(_that.title,_that.description,_that.hashtags,_that.isPublic,_that.pickVideoId,_that.videoUrl,_that.assetPath);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -499,10 +519,10 @@ return $default(_that.title,_that.hashtags,_that.isPublic,_that.pickVideoId);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  List<String> hashtags,  bool isPublic,  int? pickVideoId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String? description,  List<String> hashtags,  bool isPublic,  int? pickVideoId,  String? videoUrl,  String? assetPath)?  $default,) {final _that = this;
 switch (_that) {
 case _RoomCreateReq() when $default != null:
-return $default(_that.title,_that.hashtags,_that.isPublic,_that.pickVideoId);case _:
+return $default(_that.title,_that.description,_that.hashtags,_that.isPublic,_that.pickVideoId,_that.videoUrl,_that.assetPath);case _:
   return null;
 
 }
@@ -514,10 +534,11 @@ return $default(_that.title,_that.hashtags,_that.isPublic,_that.pickVideoId);cas
 @JsonSerializable()
 
 class _RoomCreateReq implements RoomCreateReq {
-  const _RoomCreateReq({required this.title, final  List<String> hashtags = const <String>[], this.isPublic = true, this.pickVideoId}): _hashtags = hashtags;
+  const _RoomCreateReq({required this.title, this.description, final  List<String> hashtags = const <String>[], this.isPublic = true, this.pickVideoId, this.videoUrl, this.assetPath}): _hashtags = hashtags;
   factory _RoomCreateReq.fromJson(Map<String, dynamic> json) => _$RoomCreateReqFromJson(json);
 
 @override final  String title;
+@override final  String? description;
  final  List<String> _hashtags;
 @override@JsonKey() List<String> get hashtags {
   if (_hashtags is EqualUnmodifiableListView) return _hashtags;
@@ -526,8 +547,9 @@ class _RoomCreateReq implements RoomCreateReq {
 }
 
 @override@JsonKey() final  bool isPublic;
-/// "이번 주 챌룸 PICK" 에서 골라 시작한 경우 그 영상 id — 직접 만들면 `null`.
 @override final  int? pickVideoId;
+@override final  String? videoUrl;
+@override final  String? assetPath;
 
 /// Create a copy of RoomCreateReq
 /// with the given fields replaced by the non-null parameter values.
@@ -542,16 +564,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RoomCreateReq&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._hashtags, _hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.pickVideoId, pickVideoId) || other.pickVideoId == pickVideoId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RoomCreateReq&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other._hashtags, _hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.pickVideoId, pickVideoId) || other.pickVideoId == pickVideoId)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.assetPath, assetPath) || other.assetPath == assetPath));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,const DeepCollectionEquality().hash(_hashtags),isPublic,pickVideoId);
+int get hashCode => Object.hash(runtimeType,title,description,const DeepCollectionEquality().hash(_hashtags),isPublic,pickVideoId,videoUrl,assetPath);
 
 @override
 String toString() {
-  return 'RoomCreateReq(title: $title, hashtags: $hashtags, isPublic: $isPublic, pickVideoId: $pickVideoId)';
+  return 'RoomCreateReq(title: $title, description: $description, hashtags: $hashtags, isPublic: $isPublic, pickVideoId: $pickVideoId, videoUrl: $videoUrl, assetPath: $assetPath)';
 }
 
 
@@ -562,7 +584,7 @@ abstract mixin class _$RoomCreateReqCopyWith<$Res> implements $RoomCreateReqCopy
   factory _$RoomCreateReqCopyWith(_RoomCreateReq value, $Res Function(_RoomCreateReq) _then) = __$RoomCreateReqCopyWithImpl;
 @override @useResult
 $Res call({
- String title, List<String> hashtags, bool isPublic, int? pickVideoId
+ String title, String? description, List<String> hashtags, bool isPublic, int? pickVideoId, String? videoUrl, String? assetPath
 });
 
 
@@ -579,13 +601,16 @@ class __$RoomCreateReqCopyWithImpl<$Res>
 
 /// Create a copy of RoomCreateReq
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? hashtags = null,Object? isPublic = null,Object? pickVideoId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? description = freezed,Object? hashtags = null,Object? isPublic = null,Object? pickVideoId = freezed,Object? videoUrl = freezed,Object? assetPath = freezed,}) {
   return _then(_RoomCreateReq(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,hashtags: null == hashtags ? _self._hashtags : hashtags // ignore: cast_nullable_to_non_nullable
+as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,hashtags: null == hashtags ? _self._hashtags : hashtags // ignore: cast_nullable_to_non_nullable
 as List<String>,isPublic: null == isPublic ? _self.isPublic : isPublic // ignore: cast_nullable_to_non_nullable
 as bool,pickVideoId: freezed == pickVideoId ? _self.pickVideoId : pickVideoId // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,videoUrl: freezed == videoUrl ? _self.videoUrl : videoUrl // ignore: cast_nullable_to_non_nullable
+as String?,assetPath: freezed == assetPath ? _self.assetPath : assetPath // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -596,7 +621,7 @@ as int?,
 /// @nodoc
 mixin _$RoomUpdateReq {
 
- String get title; List<String> get hashtags; bool get isPublic;
+ String get title; String? get description; List<String> get hashtags; bool get isPublic;
 /// Create a copy of RoomUpdateReq
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -609,16 +634,16 @@ $RoomUpdateReqCopyWith<RoomUpdateReq> get copyWith => _$RoomUpdateReqCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RoomUpdateReq&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.hashtags, hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RoomUpdateReq&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other.hashtags, hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,const DeepCollectionEquality().hash(hashtags),isPublic);
+int get hashCode => Object.hash(runtimeType,title,description,const DeepCollectionEquality().hash(hashtags),isPublic);
 
 @override
 String toString() {
-  return 'RoomUpdateReq(title: $title, hashtags: $hashtags, isPublic: $isPublic)';
+  return 'RoomUpdateReq(title: $title, description: $description, hashtags: $hashtags, isPublic: $isPublic)';
 }
 
 
@@ -629,7 +654,7 @@ abstract mixin class $RoomUpdateReqCopyWith<$Res>  {
   factory $RoomUpdateReqCopyWith(RoomUpdateReq value, $Res Function(RoomUpdateReq) _then) = _$RoomUpdateReqCopyWithImpl;
 @useResult
 $Res call({
- String title, List<String> hashtags, bool isPublic
+ String title, String? description, List<String> hashtags, bool isPublic
 });
 
 
@@ -646,10 +671,11 @@ class _$RoomUpdateReqCopyWithImpl<$Res>
 
 /// Create a copy of RoomUpdateReq
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? hashtags = null,Object? isPublic = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? description = freezed,Object? hashtags = null,Object? isPublic = null,}) {
   return _then(_self.copyWith(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,hashtags: null == hashtags ? _self.hashtags : hashtags // ignore: cast_nullable_to_non_nullable
+as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,hashtags: null == hashtags ? _self.hashtags : hashtags // ignore: cast_nullable_to_non_nullable
 as List<String>,isPublic: null == isPublic ? _self.isPublic : isPublic // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
@@ -736,10 +762,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  List<String> hashtags,  bool isPublic)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String? description,  List<String> hashtags,  bool isPublic)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RoomUpdateReq() when $default != null:
-return $default(_that.title,_that.hashtags,_that.isPublic);case _:
+return $default(_that.title,_that.description,_that.hashtags,_that.isPublic);case _:
   return orElse();
 
 }
@@ -757,10 +783,10 @@ return $default(_that.title,_that.hashtags,_that.isPublic);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  List<String> hashtags,  bool isPublic)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String? description,  List<String> hashtags,  bool isPublic)  $default,) {final _that = this;
 switch (_that) {
 case _RoomUpdateReq():
-return $default(_that.title,_that.hashtags,_that.isPublic);case _:
+return $default(_that.title,_that.description,_that.hashtags,_that.isPublic);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -777,10 +803,10 @@ return $default(_that.title,_that.hashtags,_that.isPublic);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  List<String> hashtags,  bool isPublic)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String? description,  List<String> hashtags,  bool isPublic)?  $default,) {final _that = this;
 switch (_that) {
 case _RoomUpdateReq() when $default != null:
-return $default(_that.title,_that.hashtags,_that.isPublic);case _:
+return $default(_that.title,_that.description,_that.hashtags,_that.isPublic);case _:
   return null;
 
 }
@@ -792,10 +818,11 @@ return $default(_that.title,_that.hashtags,_that.isPublic);case _:
 @JsonSerializable()
 
 class _RoomUpdateReq implements RoomUpdateReq {
-  const _RoomUpdateReq({required this.title, final  List<String> hashtags = const <String>[], this.isPublic = true}): _hashtags = hashtags;
+  const _RoomUpdateReq({required this.title, this.description, final  List<String> hashtags = const <String>[], this.isPublic = true}): _hashtags = hashtags;
   factory _RoomUpdateReq.fromJson(Map<String, dynamic> json) => _$RoomUpdateReqFromJson(json);
 
 @override final  String title;
+@override final  String? description;
  final  List<String> _hashtags;
 @override@JsonKey() List<String> get hashtags {
   if (_hashtags is EqualUnmodifiableListView) return _hashtags;
@@ -818,16 +845,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RoomUpdateReq&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._hashtags, _hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RoomUpdateReq&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other._hashtags, _hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,const DeepCollectionEquality().hash(_hashtags),isPublic);
+int get hashCode => Object.hash(runtimeType,title,description,const DeepCollectionEquality().hash(_hashtags),isPublic);
 
 @override
 String toString() {
-  return 'RoomUpdateReq(title: $title, hashtags: $hashtags, isPublic: $isPublic)';
+  return 'RoomUpdateReq(title: $title, description: $description, hashtags: $hashtags, isPublic: $isPublic)';
 }
 
 
@@ -838,7 +865,7 @@ abstract mixin class _$RoomUpdateReqCopyWith<$Res> implements $RoomUpdateReqCopy
   factory _$RoomUpdateReqCopyWith(_RoomUpdateReq value, $Res Function(_RoomUpdateReq) _then) = __$RoomUpdateReqCopyWithImpl;
 @override @useResult
 $Res call({
- String title, List<String> hashtags, bool isPublic
+ String title, String? description, List<String> hashtags, bool isPublic
 });
 
 
@@ -855,10 +882,11 @@ class __$RoomUpdateReqCopyWithImpl<$Res>
 
 /// Create a copy of RoomUpdateReq
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? hashtags = null,Object? isPublic = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? description = freezed,Object? hashtags = null,Object? isPublic = null,}) {
   return _then(_RoomUpdateReq(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,hashtags: null == hashtags ? _self._hashtags : hashtags // ignore: cast_nullable_to_non_nullable
+as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,hashtags: null == hashtags ? _self._hashtags : hashtags // ignore: cast_nullable_to_non_nullable
 as List<String>,isPublic: null == isPublic ? _self.isPublic : isPublic // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
@@ -1142,9 +1170,12 @@ as bool,
 /// @nodoc
 mixin _$RoomDetail {
 
- int get id; String get title; List<String> get hashtags; bool get isPublic; List<ParticipantInfo> get members; int get memberCount; List<RoomChallenge> get challenges;/// 로그인한 유저가 이 방의 방장이면 `true` — 멤버 관리(내보내기 등) UI 노출 여부를 가른다.
+ int get id; String get title; String? get description; List<String> get hashtags; bool get isPublic; List<ParticipantInfo> get members; int get memberCount; List<RoomChallenge> get challenges;/// 로그인한 유저가 이 방의 방장이면 `true` — 멤버 관리(내보내기 등) UI 노출 여부를 가른다.
  bool get isOwnedByMe;/// 방장이 발급한 초대 코드 — 아직 안 만들었으면 `null`. [RoomInviteScreen] 이 보여준다.
- String? get inviteCode;
+ String? get inviteCode;/// 이 방에 참가 신청을 보내놓고 아직 방장 수락/거절 전인 사람들 — [isOwnedByMe] 일 때만
+/// 채워진다(내가 방장이 아니면 남의 신청 목록을 볼 이유가 없다). 멤버 화면 맨 위에
+/// "신청 대기 중" 으로 보여주고, 방장이 수락하면 [members] 로, 거절하면 그냥 사라진다.
+ List<ParticipantInfo> get pendingApplicants;
 /// Create a copy of RoomDetail
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1157,16 +1188,16 @@ $RoomDetailCopyWith<RoomDetail> get copyWith => _$RoomDetailCopyWithImpl<RoomDet
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RoomDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.hashtags, hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other.members, members)&&(identical(other.memberCount, memberCount) || other.memberCount == memberCount)&&const DeepCollectionEquality().equals(other.challenges, challenges)&&(identical(other.isOwnedByMe, isOwnedByMe) || other.isOwnedByMe == isOwnedByMe)&&(identical(other.inviteCode, inviteCode) || other.inviteCode == inviteCode));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RoomDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other.hashtags, hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other.members, members)&&(identical(other.memberCount, memberCount) || other.memberCount == memberCount)&&const DeepCollectionEquality().equals(other.challenges, challenges)&&(identical(other.isOwnedByMe, isOwnedByMe) || other.isOwnedByMe == isOwnedByMe)&&(identical(other.inviteCode, inviteCode) || other.inviteCode == inviteCode)&&const DeepCollectionEquality().equals(other.pendingApplicants, pendingApplicants));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(hashtags),isPublic,const DeepCollectionEquality().hash(members),memberCount,const DeepCollectionEquality().hash(challenges),isOwnedByMe,inviteCode);
+int get hashCode => Object.hash(runtimeType,id,title,description,const DeepCollectionEquality().hash(hashtags),isPublic,const DeepCollectionEquality().hash(members),memberCount,const DeepCollectionEquality().hash(challenges),isOwnedByMe,inviteCode,const DeepCollectionEquality().hash(pendingApplicants));
 
 @override
 String toString() {
-  return 'RoomDetail(id: $id, title: $title, hashtags: $hashtags, isPublic: $isPublic, members: $members, memberCount: $memberCount, challenges: $challenges, isOwnedByMe: $isOwnedByMe, inviteCode: $inviteCode)';
+  return 'RoomDetail(id: $id, title: $title, description: $description, hashtags: $hashtags, isPublic: $isPublic, members: $members, memberCount: $memberCount, challenges: $challenges, isOwnedByMe: $isOwnedByMe, inviteCode: $inviteCode, pendingApplicants: $pendingApplicants)';
 }
 
 
@@ -1177,7 +1208,7 @@ abstract mixin class $RoomDetailCopyWith<$Res>  {
   factory $RoomDetailCopyWith(RoomDetail value, $Res Function(RoomDetail) _then) = _$RoomDetailCopyWithImpl;
 @useResult
 $Res call({
- int id, String title, List<String> hashtags, bool isPublic, List<ParticipantInfo> members, int memberCount, List<RoomChallenge> challenges, bool isOwnedByMe, String? inviteCode
+ int id, String title, String? description, List<String> hashtags, bool isPublic, List<ParticipantInfo> members, int memberCount, List<RoomChallenge> challenges, bool isOwnedByMe, String? inviteCode, List<ParticipantInfo> pendingApplicants
 });
 
 
@@ -1194,18 +1225,20 @@ class _$RoomDetailCopyWithImpl<$Res>
 
 /// Create a copy of RoomDetail
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? hashtags = null,Object? isPublic = null,Object? members = null,Object? memberCount = null,Object? challenges = null,Object? isOwnedByMe = null,Object? inviteCode = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = freezed,Object? hashtags = null,Object? isPublic = null,Object? members = null,Object? memberCount = null,Object? challenges = null,Object? isOwnedByMe = null,Object? inviteCode = freezed,Object? pendingApplicants = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,hashtags: null == hashtags ? _self.hashtags : hashtags // ignore: cast_nullable_to_non_nullable
+as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,hashtags: null == hashtags ? _self.hashtags : hashtags // ignore: cast_nullable_to_non_nullable
 as List<String>,isPublic: null == isPublic ? _self.isPublic : isPublic // ignore: cast_nullable_to_non_nullable
 as bool,members: null == members ? _self.members : members // ignore: cast_nullable_to_non_nullable
 as List<ParticipantInfo>,memberCount: null == memberCount ? _self.memberCount : memberCount // ignore: cast_nullable_to_non_nullable
 as int,challenges: null == challenges ? _self.challenges : challenges // ignore: cast_nullable_to_non_nullable
 as List<RoomChallenge>,isOwnedByMe: null == isOwnedByMe ? _self.isOwnedByMe : isOwnedByMe // ignore: cast_nullable_to_non_nullable
 as bool,inviteCode: freezed == inviteCode ? _self.inviteCode : inviteCode // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,pendingApplicants: null == pendingApplicants ? _self.pendingApplicants : pendingApplicants // ignore: cast_nullable_to_non_nullable
+as List<ParticipantInfo>,
   ));
 }
 
@@ -1290,10 +1323,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  List<String> hashtags,  bool isPublic,  List<ParticipantInfo> members,  int memberCount,  List<RoomChallenge> challenges,  bool isOwnedByMe,  String? inviteCode)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String? description,  List<String> hashtags,  bool isPublic,  List<ParticipantInfo> members,  int memberCount,  List<RoomChallenge> challenges,  bool isOwnedByMe,  String? inviteCode,  List<ParticipantInfo> pendingApplicants)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RoomDetail() when $default != null:
-return $default(_that.id,_that.title,_that.hashtags,_that.isPublic,_that.members,_that.memberCount,_that.challenges,_that.isOwnedByMe,_that.inviteCode);case _:
+return $default(_that.id,_that.title,_that.description,_that.hashtags,_that.isPublic,_that.members,_that.memberCount,_that.challenges,_that.isOwnedByMe,_that.inviteCode,_that.pendingApplicants);case _:
   return orElse();
 
 }
@@ -1311,10 +1344,10 @@ return $default(_that.id,_that.title,_that.hashtags,_that.isPublic,_that.members
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  List<String> hashtags,  bool isPublic,  List<ParticipantInfo> members,  int memberCount,  List<RoomChallenge> challenges,  bool isOwnedByMe,  String? inviteCode)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String? description,  List<String> hashtags,  bool isPublic,  List<ParticipantInfo> members,  int memberCount,  List<RoomChallenge> challenges,  bool isOwnedByMe,  String? inviteCode,  List<ParticipantInfo> pendingApplicants)  $default,) {final _that = this;
 switch (_that) {
 case _RoomDetail():
-return $default(_that.id,_that.title,_that.hashtags,_that.isPublic,_that.members,_that.memberCount,_that.challenges,_that.isOwnedByMe,_that.inviteCode);case _:
+return $default(_that.id,_that.title,_that.description,_that.hashtags,_that.isPublic,_that.members,_that.memberCount,_that.challenges,_that.isOwnedByMe,_that.inviteCode,_that.pendingApplicants);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1331,10 +1364,10 @@ return $default(_that.id,_that.title,_that.hashtags,_that.isPublic,_that.members
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  List<String> hashtags,  bool isPublic,  List<ParticipantInfo> members,  int memberCount,  List<RoomChallenge> challenges,  bool isOwnedByMe,  String? inviteCode)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String? description,  List<String> hashtags,  bool isPublic,  List<ParticipantInfo> members,  int memberCount,  List<RoomChallenge> challenges,  bool isOwnedByMe,  String? inviteCode,  List<ParticipantInfo> pendingApplicants)?  $default,) {final _that = this;
 switch (_that) {
 case _RoomDetail() when $default != null:
-return $default(_that.id,_that.title,_that.hashtags,_that.isPublic,_that.members,_that.memberCount,_that.challenges,_that.isOwnedByMe,_that.inviteCode);case _:
+return $default(_that.id,_that.title,_that.description,_that.hashtags,_that.isPublic,_that.members,_that.memberCount,_that.challenges,_that.isOwnedByMe,_that.inviteCode,_that.pendingApplicants);case _:
   return null;
 
 }
@@ -1346,11 +1379,12 @@ return $default(_that.id,_that.title,_that.hashtags,_that.isPublic,_that.members
 @JsonSerializable()
 
 class _RoomDetail implements RoomDetail {
-  const _RoomDetail({required this.id, required this.title, final  List<String> hashtags = const <String>[], this.isPublic = true, final  List<ParticipantInfo> members = const <ParticipantInfo>[], required this.memberCount, final  List<RoomChallenge> challenges = const <RoomChallenge>[], this.isOwnedByMe = false, this.inviteCode}): _hashtags = hashtags,_members = members,_challenges = challenges;
+  const _RoomDetail({required this.id, required this.title, this.description, final  List<String> hashtags = const <String>[], this.isPublic = true, final  List<ParticipantInfo> members = const <ParticipantInfo>[], required this.memberCount, final  List<RoomChallenge> challenges = const <RoomChallenge>[], this.isOwnedByMe = false, this.inviteCode, final  List<ParticipantInfo> pendingApplicants = const <ParticipantInfo>[]}): _hashtags = hashtags,_members = members,_challenges = challenges,_pendingApplicants = pendingApplicants;
   factory _RoomDetail.fromJson(Map<String, dynamic> json) => _$RoomDetailFromJson(json);
 
 @override final  int id;
 @override final  String title;
+@override final  String? description;
  final  List<String> _hashtags;
 @override@JsonKey() List<String> get hashtags {
   if (_hashtags is EqualUnmodifiableListView) return _hashtags;
@@ -1378,6 +1412,19 @@ class _RoomDetail implements RoomDetail {
 @override@JsonKey() final  bool isOwnedByMe;
 /// 방장이 발급한 초대 코드 — 아직 안 만들었으면 `null`. [RoomInviteScreen] 이 보여준다.
 @override final  String? inviteCode;
+/// 이 방에 참가 신청을 보내놓고 아직 방장 수락/거절 전인 사람들 — [isOwnedByMe] 일 때만
+/// 채워진다(내가 방장이 아니면 남의 신청 목록을 볼 이유가 없다). 멤버 화면 맨 위에
+/// "신청 대기 중" 으로 보여주고, 방장이 수락하면 [members] 로, 거절하면 그냥 사라진다.
+ final  List<ParticipantInfo> _pendingApplicants;
+/// 이 방에 참가 신청을 보내놓고 아직 방장 수락/거절 전인 사람들 — [isOwnedByMe] 일 때만
+/// 채워진다(내가 방장이 아니면 남의 신청 목록을 볼 이유가 없다). 멤버 화면 맨 위에
+/// "신청 대기 중" 으로 보여주고, 방장이 수락하면 [members] 로, 거절하면 그냥 사라진다.
+@override@JsonKey() List<ParticipantInfo> get pendingApplicants {
+  if (_pendingApplicants is EqualUnmodifiableListView) return _pendingApplicants;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_pendingApplicants);
+}
+
 
 /// Create a copy of RoomDetail
 /// with the given fields replaced by the non-null parameter values.
@@ -1392,16 +1439,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RoomDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._hashtags, _hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other._members, _members)&&(identical(other.memberCount, memberCount) || other.memberCount == memberCount)&&const DeepCollectionEquality().equals(other._challenges, _challenges)&&(identical(other.isOwnedByMe, isOwnedByMe) || other.isOwnedByMe == isOwnedByMe)&&(identical(other.inviteCode, inviteCode) || other.inviteCode == inviteCode));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RoomDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other._hashtags, _hashtags)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other._members, _members)&&(identical(other.memberCount, memberCount) || other.memberCount == memberCount)&&const DeepCollectionEquality().equals(other._challenges, _challenges)&&(identical(other.isOwnedByMe, isOwnedByMe) || other.isOwnedByMe == isOwnedByMe)&&(identical(other.inviteCode, inviteCode) || other.inviteCode == inviteCode)&&const DeepCollectionEquality().equals(other._pendingApplicants, _pendingApplicants));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(_hashtags),isPublic,const DeepCollectionEquality().hash(_members),memberCount,const DeepCollectionEquality().hash(_challenges),isOwnedByMe,inviteCode);
+int get hashCode => Object.hash(runtimeType,id,title,description,const DeepCollectionEquality().hash(_hashtags),isPublic,const DeepCollectionEquality().hash(_members),memberCount,const DeepCollectionEquality().hash(_challenges),isOwnedByMe,inviteCode,const DeepCollectionEquality().hash(_pendingApplicants));
 
 @override
 String toString() {
-  return 'RoomDetail(id: $id, title: $title, hashtags: $hashtags, isPublic: $isPublic, members: $members, memberCount: $memberCount, challenges: $challenges, isOwnedByMe: $isOwnedByMe, inviteCode: $inviteCode)';
+  return 'RoomDetail(id: $id, title: $title, description: $description, hashtags: $hashtags, isPublic: $isPublic, members: $members, memberCount: $memberCount, challenges: $challenges, isOwnedByMe: $isOwnedByMe, inviteCode: $inviteCode, pendingApplicants: $pendingApplicants)';
 }
 
 
@@ -1412,7 +1459,7 @@ abstract mixin class _$RoomDetailCopyWith<$Res> implements $RoomDetailCopyWith<$
   factory _$RoomDetailCopyWith(_RoomDetail value, $Res Function(_RoomDetail) _then) = __$RoomDetailCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String title, List<String> hashtags, bool isPublic, List<ParticipantInfo> members, int memberCount, List<RoomChallenge> challenges, bool isOwnedByMe, String? inviteCode
+ int id, String title, String? description, List<String> hashtags, bool isPublic, List<ParticipantInfo> members, int memberCount, List<RoomChallenge> challenges, bool isOwnedByMe, String? inviteCode, List<ParticipantInfo> pendingApplicants
 });
 
 
@@ -1429,18 +1476,20 @@ class __$RoomDetailCopyWithImpl<$Res>
 
 /// Create a copy of RoomDetail
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? hashtags = null,Object? isPublic = null,Object? members = null,Object? memberCount = null,Object? challenges = null,Object? isOwnedByMe = null,Object? inviteCode = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = freezed,Object? hashtags = null,Object? isPublic = null,Object? members = null,Object? memberCount = null,Object? challenges = null,Object? isOwnedByMe = null,Object? inviteCode = freezed,Object? pendingApplicants = null,}) {
   return _then(_RoomDetail(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,hashtags: null == hashtags ? _self._hashtags : hashtags // ignore: cast_nullable_to_non_nullable
+as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,hashtags: null == hashtags ? _self._hashtags : hashtags // ignore: cast_nullable_to_non_nullable
 as List<String>,isPublic: null == isPublic ? _self.isPublic : isPublic // ignore: cast_nullable_to_non_nullable
 as bool,members: null == members ? _self._members : members // ignore: cast_nullable_to_non_nullable
 as List<ParticipantInfo>,memberCount: null == memberCount ? _self.memberCount : memberCount // ignore: cast_nullable_to_non_nullable
 as int,challenges: null == challenges ? _self._challenges : challenges // ignore: cast_nullable_to_non_nullable
 as List<RoomChallenge>,isOwnedByMe: null == isOwnedByMe ? _self.isOwnedByMe : isOwnedByMe // ignore: cast_nullable_to_non_nullable
 as bool,inviteCode: freezed == inviteCode ? _self.inviteCode : inviteCode // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,pendingApplicants: null == pendingApplicants ? _self._pendingApplicants : pendingApplicants // ignore: cast_nullable_to_non_nullable
+as List<ParticipantInfo>,
   ));
 }
 
@@ -1734,7 +1783,8 @@ mixin _$ChallengeDetail {
  int get id; String get title;/// "YouTube Shorts" 같은 출처 표기.
  String get source;/// 방장이 처음 올린 원본(대표) 영상 — 있으면 재생할 수 있다.
  String? get videoUrl; String? get assetPath; int get totalCount; List<Submission> get submissions;/// 원본 영상에 달린 댓글 수. 제출 영상 각각의 댓글 수는 [Submission.commentCount] 를 본다.
- int get commentCount;
+ int get commentCount;/// 원본 영상 좋아요 수. 제출 영상 각각의 좋아요는 [Submission.likeCount] 를 본다.
+ int get likeCount; bool get isLikedByMe;
 /// Create a copy of ChallengeDetail
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1747,16 +1797,16 @@ $ChallengeDetailCopyWith<ChallengeDetail> get copyWith => _$ChallengeDetailCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChallengeDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.source, source) || other.source == source)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.assetPath, assetPath) || other.assetPath == assetPath)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&const DeepCollectionEquality().equals(other.submissions, submissions)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChallengeDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.source, source) || other.source == source)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.assetPath, assetPath) || other.assetPath == assetPath)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&const DeepCollectionEquality().equals(other.submissions, submissions)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.isLikedByMe, isLikedByMe) || other.isLikedByMe == isLikedByMe));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,source,videoUrl,assetPath,totalCount,const DeepCollectionEquality().hash(submissions),commentCount);
+int get hashCode => Object.hash(runtimeType,id,title,source,videoUrl,assetPath,totalCount,const DeepCollectionEquality().hash(submissions),commentCount,likeCount,isLikedByMe);
 
 @override
 String toString() {
-  return 'ChallengeDetail(id: $id, title: $title, source: $source, videoUrl: $videoUrl, assetPath: $assetPath, totalCount: $totalCount, submissions: $submissions, commentCount: $commentCount)';
+  return 'ChallengeDetail(id: $id, title: $title, source: $source, videoUrl: $videoUrl, assetPath: $assetPath, totalCount: $totalCount, submissions: $submissions, commentCount: $commentCount, likeCount: $likeCount, isLikedByMe: $isLikedByMe)';
 }
 
 
@@ -1767,7 +1817,7 @@ abstract mixin class $ChallengeDetailCopyWith<$Res>  {
   factory $ChallengeDetailCopyWith(ChallengeDetail value, $Res Function(ChallengeDetail) _then) = _$ChallengeDetailCopyWithImpl;
 @useResult
 $Res call({
- int id, String title, String source, String? videoUrl, String? assetPath, int totalCount, List<Submission> submissions, int commentCount
+ int id, String title, String source, String? videoUrl, String? assetPath, int totalCount, List<Submission> submissions, int commentCount, int likeCount, bool isLikedByMe
 });
 
 
@@ -1784,7 +1834,7 @@ class _$ChallengeDetailCopyWithImpl<$Res>
 
 /// Create a copy of ChallengeDetail
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? source = null,Object? videoUrl = freezed,Object? assetPath = freezed,Object? totalCount = null,Object? submissions = null,Object? commentCount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? source = null,Object? videoUrl = freezed,Object? assetPath = freezed,Object? totalCount = null,Object? submissions = null,Object? commentCount = null,Object? likeCount = null,Object? isLikedByMe = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -1794,7 +1844,9 @@ as String?,assetPath: freezed == assetPath ? _self.assetPath : assetPath // igno
 as String?,totalCount: null == totalCount ? _self.totalCount : totalCount // ignore: cast_nullable_to_non_nullable
 as int,submissions: null == submissions ? _self.submissions : submissions // ignore: cast_nullable_to_non_nullable
 as List<Submission>,commentCount: null == commentCount ? _self.commentCount : commentCount // ignore: cast_nullable_to_non_nullable
-as int,
+as int,likeCount: null == likeCount ? _self.likeCount : likeCount // ignore: cast_nullable_to_non_nullable
+as int,isLikedByMe: null == isLikedByMe ? _self.isLikedByMe : isLikedByMe // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -1879,10 +1931,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  int totalCount,  List<Submission> submissions,  int commentCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  int totalCount,  List<Submission> submissions,  int commentCount,  int likeCount,  bool isLikedByMe)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ChallengeDetail() when $default != null:
-return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.totalCount,_that.submissions,_that.commentCount);case _:
+return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.totalCount,_that.submissions,_that.commentCount,_that.likeCount,_that.isLikedByMe);case _:
   return orElse();
 
 }
@@ -1900,10 +1952,10 @@ return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  int totalCount,  List<Submission> submissions,  int commentCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  int totalCount,  List<Submission> submissions,  int commentCount,  int likeCount,  bool isLikedByMe)  $default,) {final _that = this;
 switch (_that) {
 case _ChallengeDetail():
-return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.totalCount,_that.submissions,_that.commentCount);case _:
+return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.totalCount,_that.submissions,_that.commentCount,_that.likeCount,_that.isLikedByMe);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1920,10 +1972,10 @@ return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  int totalCount,  List<Submission> submissions,  int commentCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String source,  String? videoUrl,  String? assetPath,  int totalCount,  List<Submission> submissions,  int commentCount,  int likeCount,  bool isLikedByMe)?  $default,) {final _that = this;
 switch (_that) {
 case _ChallengeDetail() when $default != null:
-return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.totalCount,_that.submissions,_that.commentCount);case _:
+return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath,_that.totalCount,_that.submissions,_that.commentCount,_that.likeCount,_that.isLikedByMe);case _:
   return null;
 
 }
@@ -1935,7 +1987,7 @@ return $default(_that.id,_that.title,_that.source,_that.videoUrl,_that.assetPath
 @JsonSerializable()
 
 class _ChallengeDetail implements ChallengeDetail {
-  const _ChallengeDetail({required this.id, required this.title, required this.source, this.videoUrl, this.assetPath, required this.totalCount, final  List<Submission> submissions = const <Submission>[], this.commentCount = 0}): _submissions = submissions;
+  const _ChallengeDetail({required this.id, required this.title, required this.source, this.videoUrl, this.assetPath, required this.totalCount, final  List<Submission> submissions = const <Submission>[], this.commentCount = 0, this.likeCount = 0, this.isLikedByMe = false}): _submissions = submissions;
   factory _ChallengeDetail.fromJson(Map<String, dynamic> json) => _$ChallengeDetailFromJson(json);
 
 @override final  int id;
@@ -1955,6 +2007,9 @@ class _ChallengeDetail implements ChallengeDetail {
 
 /// 원본 영상에 달린 댓글 수. 제출 영상 각각의 댓글 수는 [Submission.commentCount] 를 본다.
 @override@JsonKey() final  int commentCount;
+/// 원본 영상 좋아요 수. 제출 영상 각각의 좋아요는 [Submission.likeCount] 를 본다.
+@override@JsonKey() final  int likeCount;
+@override@JsonKey() final  bool isLikedByMe;
 
 /// Create a copy of ChallengeDetail
 /// with the given fields replaced by the non-null parameter values.
@@ -1969,16 +2024,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChallengeDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.source, source) || other.source == source)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.assetPath, assetPath) || other.assetPath == assetPath)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&const DeepCollectionEquality().equals(other._submissions, _submissions)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChallengeDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.source, source) || other.source == source)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.assetPath, assetPath) || other.assetPath == assetPath)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&const DeepCollectionEquality().equals(other._submissions, _submissions)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.isLikedByMe, isLikedByMe) || other.isLikedByMe == isLikedByMe));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,source,videoUrl,assetPath,totalCount,const DeepCollectionEquality().hash(_submissions),commentCount);
+int get hashCode => Object.hash(runtimeType,id,title,source,videoUrl,assetPath,totalCount,const DeepCollectionEquality().hash(_submissions),commentCount,likeCount,isLikedByMe);
 
 @override
 String toString() {
-  return 'ChallengeDetail(id: $id, title: $title, source: $source, videoUrl: $videoUrl, assetPath: $assetPath, totalCount: $totalCount, submissions: $submissions, commentCount: $commentCount)';
+  return 'ChallengeDetail(id: $id, title: $title, source: $source, videoUrl: $videoUrl, assetPath: $assetPath, totalCount: $totalCount, submissions: $submissions, commentCount: $commentCount, likeCount: $likeCount, isLikedByMe: $isLikedByMe)';
 }
 
 
@@ -1989,7 +2044,7 @@ abstract mixin class _$ChallengeDetailCopyWith<$Res> implements $ChallengeDetail
   factory _$ChallengeDetailCopyWith(_ChallengeDetail value, $Res Function(_ChallengeDetail) _then) = __$ChallengeDetailCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String title, String source, String? videoUrl, String? assetPath, int totalCount, List<Submission> submissions, int commentCount
+ int id, String title, String source, String? videoUrl, String? assetPath, int totalCount, List<Submission> submissions, int commentCount, int likeCount, bool isLikedByMe
 });
 
 
@@ -2006,7 +2061,7 @@ class __$ChallengeDetailCopyWithImpl<$Res>
 
 /// Create a copy of ChallengeDetail
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? source = null,Object? videoUrl = freezed,Object? assetPath = freezed,Object? totalCount = null,Object? submissions = null,Object? commentCount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? source = null,Object? videoUrl = freezed,Object? assetPath = freezed,Object? totalCount = null,Object? submissions = null,Object? commentCount = null,Object? likeCount = null,Object? isLikedByMe = null,}) {
   return _then(_ChallengeDetail(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -2016,7 +2071,9 @@ as String?,assetPath: freezed == assetPath ? _self.assetPath : assetPath // igno
 as String?,totalCount: null == totalCount ? _self.totalCount : totalCount // ignore: cast_nullable_to_non_nullable
 as int,submissions: null == submissions ? _self._submissions : submissions // ignore: cast_nullable_to_non_nullable
 as List<Submission>,commentCount: null == commentCount ? _self.commentCount : commentCount // ignore: cast_nullable_to_non_nullable
-as int,
+as int,likeCount: null == likeCount ? _self.likeCount : likeCount // ignore: cast_nullable_to_non_nullable
+as int,isLikedByMe: null == isLikedByMe ? _self.isLikedByMe : isLikedByMe // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

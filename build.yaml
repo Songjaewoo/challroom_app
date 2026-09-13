@@ -1,10 +1,13 @@
 targets:
   $default:
     builders:
-      # 서버 키가 snake_case 라면 여기서 한 번에 정한다.
-      # 클래스마다 @JsonKey(name: ...) 를 붙이지 않는다.
+      # 서버(challroom_api) 의 `MyBaseModel` 이 `alias_generator=to_camel` +
+      # `serialize_by_alias=True` 로 응답을 전부 camelCase 로 내보낸다(필드 정의 자체는
+      # snake_case 라 헷갈리기 쉽다 — 실제로 반대로 알고 있다가 한 번 사고났다).
+      # Dart 필드명도 원래 camelCase 라 여기서 변환이 필요 없다 — 굳이 `field_rename` 을
+      # 안 준다(기본값 `none`). 서버가 다른 이름을 쓰는 딱 하나의 필드(`SocialLoginReq.token`)
+      # 만 그 모델에서 개별적으로 `@JsonKey(name: ...)` 로 맞춘다.
       json_serializable:
         options:
-          field_rename: snake
           create_to_json: true
           explicit_to_json: true

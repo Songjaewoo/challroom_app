@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../core/storage/token_storage.dart';
 import '../models/auths.dart';
 import '../models/enums.dart';
 
@@ -16,18 +17,22 @@ abstract interface class AuthRepository {
 }
 
 class DioAuthRepository implements AuthRepository {
-  DioAuthRepository(this._dio);
+  DioAuthRepository(this._dio, this._tokenStorage);
 
   final Dio _dio;
+  final TokenStorage _tokenStorage;
 
   @override
   Future<AuthResult> signIn(SocialProvider provider, SocialLoginReq req) async {
-    final res = await _dio.post<Map<String, dynamic>>('/auth/${provider.apiPath}', data: req.toJson());
+    final res = await _dio.post<Map<String, dynamic>>('/auth/${provider.apiPath}/login', data: req.toJson());
     return AuthResult.fromJson(res.data!);
   }
 
   @override
   Future<void> signOut() async {
-    await _dio.post<void>('/auth/logout');
+    // 서버가 리프레시 토큰을 무효화하려면 그 토큰이 뭔지 알아야 한다 — 몸에 실어 보낸다.
+    final refreshToken = await _tokenStorage.readRefreshToken();
+    if (refreshToken == null) return;
+    await _dio.post<void>('/auth/logout', data: {'refresh_token': refreshToken});
   }
 }

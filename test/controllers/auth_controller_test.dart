@@ -21,10 +21,7 @@ class MockSocialAuthService extends Mock implements SocialAuthService {}
 class MockTokenStorage extends Mock implements TokenStorage {}
 
 const _user = User(id: 1, provider: SocialProvider.kakao, nickname: '송재우');
-const _result = AuthResult(
-  user: _user,
-  tokens: AuthTokens(accessToken: 'app-token'),
-);
+const _result = AuthResult(user: _user, accessToken: 'app-token', refreshToken: 'app-refresh-token');
 
 void main() {
   setUpAll(() {
@@ -87,7 +84,7 @@ void main() {
 
     expect(container.read(authProvider).value, _user);
     verify(() => repo.signIn(SocialProvider.kakao, const SocialLoginReq(accessToken: 'social-token'))).called(1);
-    verify(() => storage.saveTokens(accessToken: 'app-token', refreshToken: null)).called(1);
+    verify(() => storage.saveTokens(accessToken: 'app-token', refreshToken: 'app-refresh-token')).called(1);
   });
 
   test('서버가 로그인을 거절하면 AsyncError 가 된다', () async {
