@@ -12,6 +12,7 @@ import '../../../models/pick_videos.dart';
 import '../../../shared/avatar_color.dart';
 import '../../../shared/video_launcher.dart';
 import '../../../shared/widgets/thumbnail_frame.dart';
+import '../../../shared/widgets/video_thumbnail.dart';
 
 const _cardWidth = 128.0;
 const _thumbnailHeight = 168.0;
@@ -87,11 +88,7 @@ class _PickCard extends StatelessWidget {
               width: double.infinity,
               height: _thumbnailHeight,
               radius: 12,
-              child: Container(
-                color: style.background,
-                alignment: Alignment.center,
-                child: Icon(Icons.play_arrow_rounded, size: 27, color: style.accent),
-              ),
+              child: VideoThumbnail(url: video.thumbnailUrl, style: style, iconSize: 27),
             ),
             Padding(
               padding: const EdgeInsets.all(8),

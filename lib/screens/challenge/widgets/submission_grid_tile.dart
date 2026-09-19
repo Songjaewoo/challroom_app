@@ -30,13 +30,21 @@ class SubmissionGridTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final style = thumbnailStyleFor(colorIndex);
 
+    final thumbnailUrl = submission.thumbnailUrl;
+
     return ThumbnailFrame(
       radius: 12,
       child: Stack(
         children: [
+          if (thumbnailUrl != null)
+            Positioned.fill(
+              child: Image.network(thumbnailUrl, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const SizedBox()),
+            ),
           Container(
             padding: const EdgeInsets.all(8),
-            color: style.background,
+            // 실제 썸네일이 있으면 그 위에 겹치는 거라 배경색을 깔지 않는다 — 없을 때만
+            // (재생 아이콘이 보일 자리니) 순환 색으로 채운다.
+            color: thumbnailUrl == null ? style.background : null,
             child: Column(
               children: [
                 Expanded(
