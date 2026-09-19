@@ -210,7 +210,14 @@ class LocalRoomRepository implements RoomRepository {
   }
 
   @override
-  Future<List<PickVideo>> fetchWeeklyPicks() async => _picks;
+  Future<List<PickVideo>> fetchWeeklyPicks() async {
+    // 실서버가 붙어 있으면 "이번 주 챌룸 PICK" 도 통째로 실제 데이터로 바꾼다 — 방 목록과
+    // 같은 원칙(전체 교체). 지금은 편집자가 DB에 직접 심는 방식이라 비어있을 수도 있다.
+    final apiClient = _apiClient;
+    if (apiClient != null) return apiClient.fetchWeeklyPicks();
+
+    return _picks;
+  }
 
   @override
   Future<List<Room>> fetchRooms({RoomCategory? category}) async {
@@ -256,6 +263,19 @@ class LocalRoomRepository implements RoomRepository {
 
   @override
   Future<RoomDetail> fetchRoomDetail(int roomId) async {
+    final apiClient = _apiClient;
+    if (apiClient != null) {
+      try {
+        final result = await apiClient.fetchRoomDetail(roomId);
+        _cacheRealDetail(result);
+        return result.detail;
+      } on ApiException catch (e) {
+        // 로컬 데모 방(1~3번)은 서버에 없어 404 가 난다 — 그때만 로컬로 폴백한다.
+        // 그 외(비공개 방 접근 거부 등)는 진짜 에러니 그대로 위로 던진다.
+        if (e.statusCode != 404) rethrow;
+      }
+    }
+
     final detail = _roomDetails[roomId];
     if (detail == null) {
       throw const ApiException(statusCode: 404, code: 'ROOM_NOT_FOUND', message: '방을 찾을 수 없어요.');
@@ -327,6 +347,26 @@ class LocalRoomRepository implements RoomRepository {
     return fetchRoomDetail(roomId);
   }
 
+  /// 실서버에서 받아온 방 상세를 로컬 상태에도 반영한다 — 그래야 챌린지 상세로 더
+  /// 들어가거나("이 방장이 아닌 방금 서버에서 본 방") 다음에 또 이 방을 조회할 때도
+  /// 계속 앞뒤가 맞는다. "홈" 목록을 거쳐 처음 보는 실서버 방일 수도 있어서, 로컬
+  /// [_rooms]/[_myRoomIds]/[_ownedRoomIds] 에 없으면 여기서 새로 채워 넣는다.
+  void _cacheRealDetail(RoomApiDetailResult result) {
+    final detail = result.detail;
+    _roomDetails[detail.id] = detail;
+    for (final challengeDetail in result.challengeDetails) {
+      _challengeDetails[challengeDetail.id] = challengeDetail;
+    }
+
+    if (!_rooms.any((r) => r.id == detail.id)) {
+      _rooms.add(
+        Room(id: detail.id, title: detail.title, participantCount: detail.memberCount, status: RoomStatus.open),
+      );
+    }
+    if (result.isMember) _myRoomIds.add(detail.id);
+    if (detail.isOwnedByMe) _ownedRoomIds.add(detail.id);
+  }
+
   void _requireOwner(int roomId, {required String action}) {
     if (!_ownedRoomIds.contains(roomId)) {
       throw ApiException(statusCode: 403, code: 'NOT_ROOM_OWNER', message: '방장만 $action할 수 있어요.');
@@ -371,13 +411,17 @@ class LocalRoomRepository implements RoomRepository {
 
   @override
   Future<Room> createRoom(RoomCreateReq req) async {
+    // req.videoUrl/req.assetPath 를 항상 우선한다 — 화면(create_room_screen.dart)이 PICK 을
+    // 골랐든 직접 입력했든 항상 같이 보내준다. `_picks` 로 다시 찾는 건 그 PICK 이 이 로컬
+    // 고정 목록에 있을 때 "출처 표기"(source) 만 더 좋게 채우는 보너스다 — 실서버 PICK 은
+    // id 공간이 달라서 여기서 못 찾아도(= null) 정상이고, 그래도 영상 자체는 위 값으로
+    // 이미 정확하다.
     final pickVideo = req.pickVideoId == null ? null : _picks.where((p) => p.id == req.pickVideoId).firstOrNull;
     final myNickname = (await _userRepository.fetchMe()).nickname ?? '나';
 
-    // 챌린지 영상은 셋 중 하나 — 이미 있는 PICK, 화면에서 직접 붙여넣은 링크, 직접 업로드한 파일.
-    final videoUrl = pickVideo?.videoUrl ?? req.videoUrl;
-    final assetPath = pickVideo?.assetPath ?? req.assetPath;
-    final hasVideo = pickVideo != null || videoUrl != null || assetPath != null;
+    final videoUrl = req.videoUrl;
+    final assetPath = req.assetPath;
+    final hasVideo = videoUrl != null || assetPath != null;
     final source = pickVideo?.source ?? (assetPath != null ? '직접 업로드' : '링크');
 
     // 서버가 아는 출처(유튜브/인스타/틱톡)의 링크일 때만 실제 방도 만들어본다 — 직접 업로드한

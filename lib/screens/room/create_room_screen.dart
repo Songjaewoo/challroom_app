@@ -233,9 +233,12 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
               description: description.isEmpty ? null : description,
               hashtags: _hashtags,
               isPublic: _isPublic,
+              // videoUrl/assetPath 는 커스텀이든 PICK 선택이든 항상 같이 보낸다 — PICK 이
+              // 실서버에서 왔을 수도 있어서(방마다 id 공간이 다르다), pickVideoId 하나만
+              // 보내고 저장소가 로컬 고정 목록에서 다시 찾게 하면 엉뚱한 영상이 걸릴 수 있다.
               pickVideoId: video != null && !_isCustomVideo ? video.id : null,
-              videoUrl: video != null && _isCustomVideo ? video.videoUrl : null,
-              assetPath: video != null && _isCustomVideo ? video.assetPath : null,
+              videoUrl: video?.videoUrl,
+              assetPath: video?.assetPath,
             ),
           ),
     );

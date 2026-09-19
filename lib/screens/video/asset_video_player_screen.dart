@@ -16,9 +16,10 @@ import '../../models/reports.dart';
 /// 누가 올린 콘텐츠가 아닌 영상은 `null` 로 둬서 신고 메뉴 자체를 안 보여준다.
 typedef AssetVideoArgs = ({String title, String assetPath, ReportTarget? reportTarget});
 
-/// 앱에 번들된 영상이든, 사용자가 기기에서 직접 업로드한 영상이든 네이티브 플레이어로
-/// 재생한다. [assetPath] 가 `assets/` 로 시작하면 앱 번들 자산으로, 아니면(방 만들기에서
-/// "직접 업로드"로 고른 기기 파일 경로) 기기 파일로 취급한다.
+/// 앱에 번들된 영상이든, 사용자가 기기에서 직접 업로드한 영상이든, 서버가 호스팅하는
+/// 영상이든 네이티브 플레이어로 재생한다. [assetPath] 가 `assets/` 로 시작하면 앱 번들
+/// 자산으로, `http(s)://` 로 시작하면 서버가 들고 있는 영상 파일(원격 URL)로, 그 외엔
+/// (방 만들기에서 "직접 업로드"로 고른) 기기 파일 경로로 취급한다.
 ///
 /// 외부 링크(유튜브·인스타·틱톡)는 각 플랫폼 약관·임베드 제한 때문에
 /// [openVideoInAppBrowser] 로 인앱 브라우저에 맡긴다 — 이 화면은 우리가 실제로
@@ -43,9 +44,13 @@ class _AssetVideoPlayerScreenState extends State<AssetVideoPlayerScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = widget.assetPath.startsWith('assets/')
-        ? VideoPlayerController.asset(widget.assetPath)
-        : VideoPlayerController.file(File(widget.assetPath));
+    final path = widget.assetPath;
+    _controller = switch (path) {
+      _ when path.startsWith('assets/') => VideoPlayerController.asset(path),
+      _ when path.startsWith('http://') || path.startsWith('https://') =>
+        VideoPlayerController.networkUrl(Uri.parse(path)),
+      _ => VideoPlayerController.file(File(path)),
+    };
     _initialize = _controller.initialize().then((_) {
       _controller.setLooping(true);
       unawaited(_controller.play());
