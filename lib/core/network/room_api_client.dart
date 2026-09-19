@@ -32,12 +32,22 @@ class RoomApiDetailResult {
   final bool isMember;
 }
 
-/// 실제 서버(`challroom_api`)의 방 생성/목록/상세 조회 API만 얇게 감싼 클라이언트.
+/// 입장 신청 하나(`GET /room/{id}/join-requests` 의 항목). [requestId] 가 있어야
+/// 승인/거절(`PATCH .../join-requests/{id}`) 을 호출할 수 있다 — [LocalRoomRepository] 가
+/// 닉네임으로 이 id 를 다시 찾을 수 있게 따로 들고 있는다.
+class RoomApiJoinRequest {
+  const RoomApiJoinRequest({required this.requestId, required this.applicant});
+
+  final int requestId;
+  final ParticipantInfo applicant;
+}
+
+/// 실제 서버(`challroom_api`)의 방 생성/목록/상세·입장 신청 API만 얇게 감싼 클라이언트.
 ///
 /// [RoomRepository] 전체를 실서버로 옮기기엔 서버 쪽 모양이 앱이 기대하는 것과 많이
 /// 다르다(해시태그·카테고리·진행상태 없음 등 — `providers.dart` 의 설명 참고). 그래서
-/// 지금은 방 생성·목록·상세만 이 클라이언트로 붙이고, 나머지(입장 신청·멤버 관리·댓글·
-/// 좋아요 등)는 여전히 [LocalRoomRepository] 의 로컬 상태를 쓴다.
+/// 지금은 방 생성·목록·상세·입장 신청만 이 클라이언트로 붙이고, 나머지(멤버 강퇴·방
+/// 수정·댓글·좋아요 등)는 여전히 [LocalRoomRepository] 의 로컬 상태를 쓴다.
 /// 실패하면 그대로 위로 던진다(로그인 실패를 그대로 보여준 것과 같은 원칙).
 class RoomApiClient {
   RoomApiClient(this._dio);
@@ -180,6 +190,33 @@ class RoomApiClient {
     );
 
     return RoomApiDetailResult(detail: detail, challengeDetails: challengeDetails, isMember: data['isMember'] as bool);
+  }
+
+  /// 방에 입장 신청을 보낸다(`POST /room/{id}/join-request`). 이미 멤버거나 이미 대기 중인
+  /// 신청이 있으면 서버가 409 로 거절한다 — 그대로 위로 던진다.
+  Future<void> applyToRoom(int roomId) async {
+    await _dio.post<void>('/room/$roomId/join-request');
+  }
+
+  /// 대기 중인 입장 신청 목록(`GET /room/{id}/join-requests`) — 방장만 부를 수 있다.
+  Future<List<RoomApiJoinRequest>> fetchJoinRequests(int roomId) async {
+    final res = await _dio.get<List<dynamic>>('/room/$roomId/join-requests');
+    final items = (res.data ?? const []).cast<Map<String, dynamic>>();
+    return items.map((item) {
+      final applicant = item['applicant'] as Map<String, dynamic>;
+      return RoomApiJoinRequest(
+        requestId: (item['id'] as num).toInt(),
+        applicant: ParticipantInfo(
+          nickname: (applicant['nickname'] as String?) ?? '익명',
+          profileImageUrl: applicant['profileImageUrl'] as String?,
+        ),
+      );
+    }).toList();
+  }
+
+  /// 입장 신청을 승인/거절한다(`PATCH /room/{id}/join-requests/{requestId}`) — 방장만.
+  Future<void> decideJoinRequest(int roomId, int requestId, {required bool approve}) async {
+    await _dio.patch<void>('/room/$roomId/join-requests/$requestId', data: {'action': approve ? 'approve' : 'reject'});
   }
 
   static String _sourceLabel(String videoSource) => switch (videoSource) {

@@ -195,6 +195,12 @@ class LocalRoomRepository implements RoomRepository {
     1: [const ParticipantInfo(nickname: '유진'), const ParticipantInfo(nickname: '태호')],
   };
 
+  /// 실서버 방의 대기 중인 입장 신청 id — 방 id -> (신청자 닉네임 -> 신청 id).
+  /// [acceptApplicant]/[rejectApplicant] 는 닉네임만 받는데 실제 승인/거절 API
+  /// (`PATCH .../join-requests/{id}`) 는 신청 id 가 필요해서, [fetchRoomDetail] 이 신청
+  /// 목록을 받아올 때마다 여기 채워둔다.
+  final _realJoinRequestIds = <int, Map<String, int>>{};
+
   var _nextRoomId = 4;
   var _nextChallengeId = 6;
 
@@ -249,6 +255,21 @@ class LocalRoomRepository implements RoomRepository {
 
   @override
   Future<void> applyToRoom(int roomId) async {
+    final apiClient = _apiClient;
+    if (apiClient != null) {
+      try {
+        await apiClient.applyToRoom(roomId);
+        // "신청" 배지는 서버 데이터가 아니라 이 로컬 상태로 그리니, 실제 신청이 성공해도
+        // 여기 반영을 안 하면 화면엔 안 뜬다.
+        _appliedRoomIds.add(roomId);
+        return;
+      } on ApiException catch (e) {
+        // 로컬 데모 방(1~3번)은 서버에 없어 404 가 난다 — 그때만 로컬로 폴백한다.
+        // 이미 멤버·이미 신청 중 같은 진짜 에러(409)는 그대로 위로 던진다.
+        if (e.statusCode != 404) rethrow;
+      }
+    }
+
     if (!_rooms.any((r) => r.id == roomId)) {
       throw const ApiException(statusCode: 404, code: 'ROOM_NOT_FOUND', message: '방을 찾을 수 없어요.');
     }
@@ -258,6 +279,9 @@ class LocalRoomRepository implements RoomRepository {
 
   @override
   Future<void> cancelApplication(int roomId) async {
+    // 서버엔 "내 신청 취소하기" 엔드포인트가 아직 없다(방장의 승인/거절만 있다) — 로컬
+    // 배지만 지운다. 실서버 방에 낸 신청은 이걸로는 안 지워지고, 서버 쪽에 방장이 거절
+    // 처리해야 실제로 사라진다.
     _appliedRoomIds.remove(roomId);
   }
 
@@ -267,8 +291,18 @@ class LocalRoomRepository implements RoomRepository {
     if (apiClient != null) {
       try {
         final result = await apiClient.fetchRoomDetail(roomId);
-        _cacheRealDetail(result);
-        return result.detail;
+        var detail = result.detail;
+
+        // 방장인 방이면 대기 중인 입장 신청도 같이 받아온다 — 남이 보는 상세엔 필요 없어서
+        // 위에서 걸러진다(서버도 방장 아니면 403 으로 막는다).
+        if (detail.isOwnedByMe) {
+          final joinRequests = await apiClient.fetchJoinRequests(roomId);
+          _realJoinRequestIds[roomId] = {for (final r in joinRequests) r.applicant.nickname: r.requestId};
+          detail = detail.copyWith(pendingApplicants: joinRequests.map((r) => r.applicant).toList());
+        }
+
+        _cacheRealDetail(detail, result.challengeDetails, result.isMember);
+        return detail;
       } on ApiException catch (e) {
         // 로컬 데모 방(1~3번)은 서버에 없어 404 가 난다 — 그때만 로컬로 폴백한다.
         // 그 외(비공개 방 접근 거부 등)는 진짜 에러니 그대로 위로 던진다.
@@ -310,6 +344,14 @@ class LocalRoomRepository implements RoomRepository {
 
   @override
   Future<RoomDetail> acceptApplicant(int roomId, String nickname) async {
+    final requestId = _realJoinRequestIds[roomId]?[nickname];
+    final apiClient = _apiClient;
+    if (apiClient != null && requestId != null) {
+      await apiClient.decideJoinRequest(roomId, requestId, approve: true);
+      _realJoinRequestIds[roomId]?.remove(nickname);
+      return fetchRoomDetail(roomId);
+    }
+
     _requireOwner(roomId, action: '신청을 수락');
     final detail = _roomDetails[roomId];
     if (detail == null) {
@@ -338,6 +380,14 @@ class LocalRoomRepository implements RoomRepository {
 
   @override
   Future<RoomDetail> rejectApplicant(int roomId, String nickname) async {
+    final requestId = _realJoinRequestIds[roomId]?[nickname];
+    final apiClient = _apiClient;
+    if (apiClient != null && requestId != null) {
+      await apiClient.decideJoinRequest(roomId, requestId, approve: false);
+      _realJoinRequestIds[roomId]?.remove(nickname);
+      return fetchRoomDetail(roomId);
+    }
+
     _requireOwner(roomId, action: '신청을 거절');
     if (!_roomDetails.containsKey(roomId)) {
       throw const ApiException(statusCode: 404, code: 'ROOM_NOT_FOUND', message: '방을 찾을 수 없어요.');
@@ -351,10 +401,9 @@ class LocalRoomRepository implements RoomRepository {
   /// 들어가거나("이 방장이 아닌 방금 서버에서 본 방") 다음에 또 이 방을 조회할 때도
   /// 계속 앞뒤가 맞는다. "홈" 목록을 거쳐 처음 보는 실서버 방일 수도 있어서, 로컬
   /// [_rooms]/[_myRoomIds]/[_ownedRoomIds] 에 없으면 여기서 새로 채워 넣는다.
-  void _cacheRealDetail(RoomApiDetailResult result) {
-    final detail = result.detail;
+  void _cacheRealDetail(RoomDetail detail, List<ChallengeDetail> challengeDetails, bool isMember) {
     _roomDetails[detail.id] = detail;
-    for (final challengeDetail in result.challengeDetails) {
+    for (final challengeDetail in challengeDetails) {
       _challengeDetails[challengeDetail.id] = challengeDetail;
     }
 
@@ -363,7 +412,7 @@ class LocalRoomRepository implements RoomRepository {
         Room(id: detail.id, title: detail.title, participantCount: detail.memberCount, status: RoomStatus.open),
       );
     }
-    if (result.isMember) _myRoomIds.add(detail.id);
+    if (isMember) _myRoomIds.add(detail.id);
     if (detail.isOwnedByMe) _ownedRoomIds.add(detail.id);
   }
 
