@@ -32,6 +32,14 @@ class RoomApiDetailResult {
   final bool isMember;
 }
 
+/// "내 방" 목록(`GET /room/mine`) 의 항목 하나 — 그 방에서 내 역할([isOwner])까지 안다.
+class RoomApiMyRoom {
+  const RoomApiMyRoom({required this.room, required this.isOwner});
+
+  final Room room;
+  final bool isOwner;
+}
+
 /// 입장 신청 하나(`GET /room/{id}/join-requests` 의 항목). [requestId] 가 있어야
 /// 승인/거절(`PATCH .../join-requests/{id}`) 을 호출할 수 있다 — [LocalRoomRepository] 가
 /// 닉네임으로 이 id 를 다시 찾을 수 있게 따로 들고 있는다.
@@ -117,6 +125,30 @@ class RoomApiClient {
           ),
         )
         .toList();
+  }
+
+  /// 내가 활동 중인 방 목록(`GET /room/mine`) — 방마다 내 역할(방장/멤버)까지 같이 온다.
+  ///
+  /// "내 방" 탭뿐 아니라, "홈" 공개방 목록에서 내가 이미 멤버/방장인 방을 가려내는 데도
+  /// 쓴다(공개방 목록 자체엔 그 정보가 없어서) — [LocalRoomRepository] 가 홈 목록을 받을
+  /// 때마다 이것도 같이 불러 로컬 멤버십 상태를 최신으로 맞춘다.
+  Future<List<RoomApiMyRoom>> fetchMyRooms({int page = 1, int limit = 50}) async {
+    final res = await _dio.get<Map<String, dynamic>>(
+      '/room/mine',
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    final items = (res.data!['items'] as List).cast<Map<String, dynamic>>();
+    return items.map((item) {
+      final room = Room(
+        id: (item['id'] as num).toInt(),
+        title: item['name'] as String,
+        participantCount: (item['memberCount'] as num).toInt(),
+        status: RoomStatus.open,
+        thumbnailUrl: item['thumbnailUrl'] as String?,
+        isMember: true,
+      );
+      return RoomApiMyRoom(room: room, isOwner: item['myRole'] == 'host');
+    }).toList();
   }
 
   /// 방 상세(`GET /room/{id}`) — 멤버 목록과 챌린지(원본 영상 + 따라찍기 응답)를 앱이 쓰는

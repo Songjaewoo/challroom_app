@@ -239,6 +239,10 @@ class LocalRoomRepository implements RoomRepository {
     final apiClient = _apiClient;
     if (apiClient != null) {
       final rooms = await apiClient.fetchPublicRooms();
+      // 공개방 목록 자체엔 "내가 이 방 멤버/방장인지"가 없어서, 방 상세를 먼저 한 번
+      // 열어봐야만 알던 예전 방식 대신 매번 실제 "내 방" 목록으로 다시 맞춘다 — 안 그러면
+      // 방장 본인 방에도 "신청" 배지가 뜨는 사고가 난다.
+      await _syncRealMembership();
       return rooms.map(_withApplied).toList();
     }
 
@@ -248,10 +252,37 @@ class LocalRoomRepository implements RoomRepository {
 
   @override
   Future<List<Room>> fetchMyRooms() async {
+    final apiClient = _apiClient;
+    if (apiClient != null) {
+      final myRooms = await apiClient.fetchMyRooms();
+      _applyRealMembership(myRooms);
+      // 실서버에 안 올라간(직접 업로드 등) 로컬 전용 방도 같이 보여준다 — 로컬 전용 id 는
+      // 전부 음수라 실서버 id(양수)와 안 겹친다.
+      final localOnly = _rooms.where((r) => r.id < 0 && _myRoomIds.contains(r.id));
+      return [...myRooms.map((r) => r.room), ...localOnly].map(_withApplied).toList();
+    }
+
     // 이미 멤버인 방 + 아직 수락 전이라 신청만 해둔 방 — 둘 다 "내 방"에 같이 보인다.
     final joined = _rooms.where((room) => _myRoomIds.contains(room.id));
     final appliedOnly = _rooms.where((room) => _appliedRoomIds.contains(room.id) && !_myRoomIds.contains(room.id));
     return [...joined, ...appliedOnly].map(_withApplied).toList();
+  }
+
+  /// [_myRoomIds]/[_ownedRoomIds] 의 실서버(양수 id) 부분만 `/room/mine` 최신 결과로 다시
+  /// 맞춘다. 데모(음수 id)는 건드리지 않는다.
+  Future<void> _syncRealMembership() async {
+    final apiClient = _apiClient;
+    if (apiClient == null) return;
+    _applyRealMembership(await apiClient.fetchMyRooms());
+  }
+
+  void _applyRealMembership(List<RoomApiMyRoom> myRooms) {
+    _myRoomIds.removeWhere((id) => id > 0);
+    _ownedRoomIds.removeWhere((id) => id > 0);
+    for (final item in myRooms) {
+      _myRoomIds.add(item.room.id);
+      if (item.isOwner) _ownedRoomIds.add(item.room.id);
+    }
   }
 
   Room _withApplied(Room room) {
@@ -271,8 +302,18 @@ class LocalRoomRepository implements RoomRepository {
         return;
       } on ApiException catch (e) {
         // 로컬 데모 방(1~3번)은 서버에 없어 404 가 난다 — 그때만 로컬로 폴백한다.
-        // 이미 멤버·이미 신청 중 같은 진짜 에러(409)는 그대로 위로 던진다.
-        if (e.statusCode != 404) rethrow;
+        if (e.statusCode == 404) {
+          // 아래 로컬 분기로 진행한다.
+        } else if (e.code == 'JOIN_REQUEST_ALREADY_PENDING') {
+          // 이 로컬 상태(`_appliedRoomIds`)는 앱을 다시 켜면 초기화되는데, 서버엔 이미
+          // 대기 중인 신청이 남아있을 수 있다 — "신청 완료" 라는 결과 자체는 이미
+          // 맞으니, 에러로 보여주지 말고 그 결과를 로컬에도 맞춰준다.
+          _appliedRoomIds.add(roomId);
+          return;
+        } else {
+          // 이미 멤버 같은 진짜 에러는 그대로 위로 던진다.
+          rethrow;
+        }
       }
     }
 
