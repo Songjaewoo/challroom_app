@@ -20,21 +20,21 @@ class LocalNotificationRepository implements NotificationRepository {
         kind: NotificationKind.applicantReceived,
         message: '유진님이 \'우리끼리 텐션 챌린지\' 방에 참가 신청을 보냈어요.',
         createdAt: now.subtract(const Duration(minutes: 20)),
-        roomId: 1,
+        roomId: -1,
       ),
       AppNotification(
         id: 2,
         kind: NotificationKind.comment,
         message: '민지님이 내 영상에 댓글을 남겼어요: "완전 웃기다 ㅋㅋ 나도 찍어볼래"',
         createdAt: now.subtract(const Duration(hours: 3)),
-        roomId: 1,
+        roomId: -1,
       ),
       AppNotification(
         id: 3,
         kind: NotificationKind.memberJoined,
         message: '지수님이 \'눈빛 승부 한판 붙자\' 방에 들어왔어요.',
         createdAt: now.subtract(const Duration(hours: 6)),
-        roomId: 2,
+        roomId: -2,
         isRead: true,
       ),
       AppNotification(
@@ -42,7 +42,7 @@ class LocalNotificationRepository implements NotificationRepository {
         kind: NotificationKind.applicationAccepted,
         message: '\'오늘 기분 한마디\' 방장이 참가 신청을 수락했어요. 함께해요!',
         createdAt: now.subtract(const Duration(days: 1)),
-        roomId: 3,
+        roomId: -3,
         isRead: true,
       ),
       AppNotification(
@@ -50,7 +50,7 @@ class LocalNotificationRepository implements NotificationRepository {
         kind: NotificationKind.applicationRejected,
         message: '\'눈빛 승부 한판 붙자\' 방장이 참가 신청을 거절했어요.',
         createdAt: now.subtract(const Duration(days: 1, hours: 4)),
-        roomId: 2,
+        roomId: -2,
         isRead: true,
       ),
       AppNotification(
@@ -58,7 +58,7 @@ class LocalNotificationRepository implements NotificationRepository {
         kind: NotificationKind.challengeAdded,
         message: '\'우리끼리 텐션 챌린지\'에 새 챌린지가 추가됐어요: 오늘 기분 한마디',
         createdAt: now.subtract(const Duration(days: 3)),
-        roomId: 1,
+        roomId: -1,
         isRead: true,
       ),
     ];

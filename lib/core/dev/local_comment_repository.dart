@@ -21,7 +21,7 @@ class LocalCommentRepository implements CommentRepository {
   final UserRepository _userRepository;
 
   final _comments = <String, List<Comment>>{
-    _key(CommentTargetType.challenge, 1): [
+    _key(CommentTargetType.challenge, -1): [
       Comment(
         id: 1,
         nickname: '하늘',
@@ -43,7 +43,7 @@ class LocalCommentRepository implements CommentRepository {
         createdAt: DateTime.now().subtract(const Duration(minutes: 42)),
       ),
     ],
-    _key(CommentTargetType.submission, 1): [
+    _key(CommentTargetType.submission, -1): [
       Comment(
         id: 4,
         nickname: '서준',
@@ -59,7 +59,7 @@ class LocalCommentRepository implements CommentRepository {
         likeCount: 1,
       ),
     ],
-    _key(CommentTargetType.submission, 2): [
+    _key(CommentTargetType.submission, -2): [
       Comment(
         id: 6,
         nickname: '민지',
@@ -68,7 +68,7 @@ class LocalCommentRepository implements CommentRepository {
         likeCount: 3,
       ),
     ],
-    _key(CommentTargetType.submission, 4): [
+    _key(CommentTargetType.submission, -4): [
       Comment(
         id: 7,
         nickname: '유나',

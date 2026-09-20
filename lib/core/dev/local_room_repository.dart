@@ -31,18 +31,22 @@ class LocalRoomRepository implements RoomRepository {
   static const _instagramSampleUrl = 'https://www.instagram.com/reel/Dc6PZngTm5R/?stkn=MTA2NTZpOW5hbjNkOQ==';
   static const _tiktokSampleUrl = 'https://vt.tiktok.com/ZSqPa4eFC/';
 
+  // 데모 데이터 id 는 전부 음수를 쓴다 — 실서버 id(방/PICK/영상 전부 1부터 자동증가)와
+  // 절대 안 겹치게 하려는 의도적인 선택이다. 예전엔 데모도 1부터 썼는데, 실제로 만든 방이
+  // 우연히 같은 번호를 받으면서 "내가 이미 멤버인 방"으로 잘못 겹쳐 보이는 버그가 실제로
+  // 났다(신청 배지가 안 뜸) — 그 뒤로 이 규칙을 못 박았다.
   static const _picks = [
-    PickVideo(id: 1, title: '3초 텐션', source: 'YouTube Shorts', videoUrl: _youtubeSampleUrl),
-    PickVideo(id: 2, title: '눈빛 승부', source: 'YouTube Shorts', videoUrl: _youtubeSampleUrl),
-    PickVideo(id: 3, title: '인스타 테스트', source: 'Instagram Reels', videoUrl: _instagramSampleUrl),
-    PickVideo(id: 4, title: '틱톡 테스트', source: 'TikTok', videoUrl: _tiktokSampleUrl),
+    PickVideo(id: -1, title: '3초 텐션', source: 'YouTube Shorts', videoUrl: _youtubeSampleUrl),
+    PickVideo(id: -2, title: '눈빛 승부', source: 'YouTube Shorts', videoUrl: _youtubeSampleUrl),
+    PickVideo(id: -3, title: '인스타 테스트', source: 'Instagram Reels', videoUrl: _instagramSampleUrl),
+    PickVideo(id: -4, title: '틱톡 테스트', source: 'TikTok', videoUrl: _tiktokSampleUrl),
     // 외부 링크가 아니라 우리가 파일을 갖고 있는 영상 — 네이티브 플레이어로 재생된다.
-    PickVideo(id: 5, title: '직접 업로드', source: '직접 업로드', assetPath: 'assets/videos/sample_challenge.mp4'),
+    PickVideo(id: -5, title: '직접 업로드', source: '직접 업로드', assetPath: 'assets/videos/sample_challenge.mp4'),
   ];
 
   final _rooms = <Room>[
     const Room(
-      id: 1,
+      id: -1,
       title: '우리끼리 텐션 챌린지',
       hashtags: ['춤', '텐션업'],
       participants: [
@@ -55,7 +59,7 @@ class LocalRoomRepository implements RoomRepository {
       category: RoomCategory.dance,
     ),
     const Room(
-      id: 2,
+      id: -2,
       title: '눈빛 승부 한판 붙자',
       hashtags: ['운동', '승부욕'],
       participants: [
@@ -67,7 +71,7 @@ class LocalRoomRepository implements RoomRepository {
       category: RoomCategory.workout,
     ),
     const Room(
-      id: 3,
+      id: -3,
       title: '오늘 기분 한마디',
       hashtags: ['리액션'],
       participants: [ParticipantInfo(nickname: '현우')],
@@ -77,8 +81,8 @@ class LocalRoomRepository implements RoomRepository {
   ];
 
   final _roomDetails = <int, RoomDetail>{
-    1: const RoomDetail(
-      id: 1,
+    -1: const RoomDetail(
+      id: -1,
       title: '우리끼리 텐션 챌린지',
       hashtags: ['춤', '텐션업'],
       members: [
@@ -89,13 +93,13 @@ class LocalRoomRepository implements RoomRepository {
       ],
       memberCount: 4,
       challenges: [
-        RoomChallenge(id: 1, title: '3초 텐션 올리기', source: 'YouTube Shorts', submittedCount: 2, totalCount: 4),
-        RoomChallenge(id: 2, title: '눈빛 승부 챌린지', source: 'TikTok', submittedCount: 1, totalCount: 4),
-        RoomChallenge(id: 3, title: '오늘 기분 한마디', source: 'Instagram Reels', submittedCount: 0, totalCount: 4),
+        RoomChallenge(id: -1, title: '3초 텐션 올리기', source: 'YouTube Shorts', submittedCount: 2, totalCount: 4),
+        RoomChallenge(id: -2, title: '눈빛 승부 챌린지', source: 'TikTok', submittedCount: 1, totalCount: 4),
+        RoomChallenge(id: -3, title: '오늘 기분 한마디', source: 'Instagram Reels', submittedCount: 0, totalCount: 4),
       ],
     ),
-    2: const RoomDetail(
-      id: 2,
+    -2: const RoomDetail(
+      id: -2,
       title: '눈빛 승부 한판 붙자',
       hashtags: ['운동', '승부욕'],
       members: [
@@ -104,17 +108,17 @@ class LocalRoomRepository implements RoomRepository {
       ],
       memberCount: 2,
       challenges: [
-        RoomChallenge(id: 4, title: '눈빛 안 웃기 버티기', source: 'YouTube Shorts', submittedCount: 1, totalCount: 2),
+        RoomChallenge(id: -4, title: '눈빛 안 웃기 버티기', source: 'YouTube Shorts', submittedCount: 1, totalCount: 2),
       ],
     ),
-    3: const RoomDetail(
-      id: 3,
+    -3: const RoomDetail(
+      id: -3,
       title: '오늘 기분 한마디',
       hashtags: ['리액션'],
       members: [ParticipantInfo(nickname: '현우')],
       memberCount: 1,
       challenges: [
-        RoomChallenge(id: 5, title: '오늘 기분 한마디로', source: 'Instagram Reels', submittedCount: 0, totalCount: 1),
+        RoomChallenge(id: -5, title: '오늘 기분 한마디로', source: 'Instagram Reels', submittedCount: 0, totalCount: 1),
       ],
     ),
   };
@@ -122,8 +126,8 @@ class LocalRoomRepository implements RoomRepository {
   final _challengeDetails = <int, ChallengeDetail>{
     // 댓글 수(commentCount)는 `LocalCommentRepository` 에 심어둔 샘플 댓글 개수와 맞춰뒀다 —
     // 실제로는 서버가 하나의 값으로 관리할 숫자가, 목업이라 두 저장소로 나뉜 것뿐이다.
-    1: const ChallengeDetail(
-      id: 1,
+    -1: const ChallengeDetail(
+      id: -1,
       title: '3초 텐션 올리기',
       source: 'YouTube Shorts',
       videoUrl: _youtubeSampleUrl,
@@ -131,39 +135,39 @@ class LocalRoomRepository implements RoomRepository {
       commentCount: 3,
       likeCount: 12,
       submissions: [
-        Submission(id: 1, nickname: '민지', videoUrl: _youtubeSampleUrl, commentCount: 2, likeCount: 5),
-        Submission(id: 2, nickname: '서준', videoUrl: _youtubeSampleUrl, commentCount: 1, likeCount: 2, isLikedByMe: true),
+        Submission(id: -1, nickname: '민지', videoUrl: _youtubeSampleUrl, commentCount: 2, likeCount: 5),
+        Submission(id: -2, nickname: '서준', videoUrl: _youtubeSampleUrl, commentCount: 1, likeCount: 2, isLikedByMe: true),
       ],
     ),
-    2: const ChallengeDetail(
-      id: 2,
+    -2: const ChallengeDetail(
+      id: -2,
       title: '눈빛 승부 챌린지',
       source: 'TikTok',
       videoUrl: _tiktokSampleUrl,
       totalCount: 4,
       likeCount: 4,
-      submissions: [Submission(id: 3, nickname: '하늘', videoUrl: _tiktokSampleUrl, commentCount: 0, likeCount: 1)],
+      submissions: [Submission(id: -3, nickname: '하늘', videoUrl: _tiktokSampleUrl, commentCount: 0, likeCount: 1)],
     ),
-    3: const ChallengeDetail(
-      id: 3,
+    -3: const ChallengeDetail(
+      id: -3,
       title: '오늘 기분 한마디',
       source: 'Instagram Reels',
       videoUrl: _instagramSampleUrl,
       totalCount: 4,
     ),
-    4: const ChallengeDetail(
-      id: 4,
+    -4: const ChallengeDetail(
+      id: -4,
       title: '눈빛 안 웃기 버티기',
       source: 'YouTube Shorts',
       videoUrl: _youtubeSampleUrl,
       totalCount: 2,
       likeCount: 7,
       submissions: [
-        Submission(id: 4, nickname: '지수', videoUrl: _youtubeSampleUrl, commentCount: 3, likeCount: 3),
+        Submission(id: -4, nickname: '지수', videoUrl: _youtubeSampleUrl, commentCount: 3, likeCount: 3),
       ],
     ),
-    5: const ChallengeDetail(
-      id: 5,
+    -5: const ChallengeDetail(
+      id: -5,
       title: '오늘 기분 한마디로',
       source: 'Instagram Reels',
       videoUrl: _instagramSampleUrl,
@@ -171,13 +175,13 @@ class LocalRoomRepository implements RoomRepository {
     ),
   };
 
-  /// 방 만들기로 새로 생긴 방 id — 데모의 고정 두 방(1, 2)에 더해 "내 방"에 넣는다.
-  final _myRoomIds = <int>{1, 2};
+  /// 방 만들기로 새로 생긴 방 id — 데모의 고정 두 방(-1, -2)에 더해 "내 방"에 넣는다.
+  final _myRoomIds = <int>{-1, -2};
 
-  /// 로그인한 유저가 방장인 방 id — 1번은 데모용으로 미리 방장으로 심어뒀고, 방을 직접
+  /// 로그인한 유저가 방장인 방 id — -1번은 데모용으로 미리 방장으로 심어뒀고, 방을 직접
   /// 만들면(`createRoom`) 그 방도 여기 추가된다. [fetchRoomDetail] 이 이 값을 보고
   /// `isOwnedByMe`/멤버 목록에 "나"를 채운다.
-  final _ownedRoomIds = <int>{1};
+  final _ownedRoomIds = <int>{-1};
 
   /// 발급된 초대 코드 -> 방 id. [joinRoomByCode] 가 이 맵으로 방을 찾는다.
   final _inviteCodes = <String, int>{};
@@ -189,10 +193,10 @@ class LocalRoomRepository implements RoomRepository {
   final _appliedRoomIds = <int>{};
 
   /// 남이 내 방에 신청해놓고 아직 내가 수락/거절하지 않은 목록 — 방 id -> 신청자들.
-  /// 1번 방(내가 방장)에 데모용으로 두 명 미리 심어뒀다.
+  /// -1번 방(내가 방장)에 데모용으로 두 명 미리 심어뒀다.
   final _pendingApplicants = <int, List<ParticipantInfo>>{
     // 수락/거절이 이 리스트를 직접 지운다(`removeWhere`) — `const` 로 두면 그때 터진다.
-    1: [const ParticipantInfo(nickname: '유진'), const ParticipantInfo(nickname: '태호')],
+    -1: [const ParticipantInfo(nickname: '유진'), const ParticipantInfo(nickname: '태호')],
   };
 
   /// 실서버 방의 대기 중인 입장 신청 id — 방 id -> (신청자 닉네임 -> 신청 id).
@@ -201,8 +205,10 @@ class LocalRoomRepository implements RoomRepository {
   /// 목록을 받아올 때마다 여기 채워둔다.
   final _realJoinRequestIds = <int, Map<String, int>>{};
 
-  var _nextRoomId = 4;
-  var _nextChallengeId = 6;
+  // 로컬 전용으로(실서버 호출 없이) 새로 생기는 방/챌린지 id 도 데모와 같은 이유로 음수를
+  // 계속 쓴다 — 데모 상수(-1~-5)와 안 겹치게 훨씬 더 작은 값에서 시작해 올라간다.
+  var _nextRoomId = -1000;
+  var _nextChallengeId = -1000;
 
   // 0/O, 1/I 처럼 헷갈리는 글자는 뺐다 — 손으로 옮겨 적어도 헛갈리지 않게.
   static const _inviteCodeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
